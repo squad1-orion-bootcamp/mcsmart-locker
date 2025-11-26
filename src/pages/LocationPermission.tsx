@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { McButton } from "@/components/McButton";
 import { McCard } from "@/components/McCard";
 import { MapPin, Zap } from "lucide-react";
@@ -6,9 +8,62 @@ import { MapPin, Zap } from "lucide-react";
 export default function LocationPermission() {
   const navigate = useNavigate();
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleAllow = () => {
-    // Simular permissão de localização
-    navigate("/order-status");
+    setIsLoading(true);
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          setIsLoading(false);
+          const { latitude, longitude } = position.coords;
+          try {
+            const n8nWebhookURL = "http://localhost:5678/webhook/GetLocation";
+            
+            fetch(n8nWebhookURL, {
+              method: "POST", 
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                latitude: latitude,
+                longitude: longitude,
+                timestamp: new Date().toISOString(),
+                // Adicione outros dados úteis, como ID do pedido ou usuário
+                // orderId: "12345", 
+              }),
+            });
+            
+           
+          } catch (err) {
+            console.error("Erro ao enviar para o n8n:", err);
+          }
+          
+          navigate("/order-status", { 
+            state: { 
+              location: { lat: latitude, lng: longitude } 
+            } 
+          });
+        },
+        (error) => {
+          setIsLoading(false);
+          console.error("Error getting location:", error);
+          toast("Erro ao obter localização", {
+            description: "Não foi possível obter sua localização. Verifique as permissões do navegador.",
+            action: {
+              label: "Tentar novamente",
+              onClick: () => handleAllow(),
+            },
+          });
+        }
+      );
+    } else {
+      setIsLoading(false);
+      toast("Geolocalização não suportada", {
+        description: "Seu navegador não suporta geolocalização.",
+      });
+      navigate("/order-status");
+    }
   };
 
   const handleDeny = () => {
@@ -54,8 +109,8 @@ export default function LocationPermission() {
         </McCard>
 
         <div className="space-y-3">
-          <McButton onClick={handleAllow}>
-            Permitir Localização
+          <McButton onClick={handleAllow} disabled={isLoading}>
+            {isLoading ? "Obtendo localização..." : "Permitir Localização"}
           </McButton>
           
           <button
