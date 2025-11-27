@@ -55,7 +55,7 @@ export default function LocationPermission() {
         },
         {
           enableHighAccuracy: false, 
-          timeout: 8000,             
+          timeout: 10000,             
           maximumAge: 60000,         
         }
       );
