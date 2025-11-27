@@ -1,0 +1,30 @@
+CARDÁPIO McDONALD'S - MéquiZap
+
+=== SANDUÍCHES ===
+- Big Mac: R$ 24,90
+  Dois hambúrgueres de carne bovina, alface, queijo, molho especial, cebola e picles em pão com gergelim
+
+- Quarteirão com Queijo: R$ 22,90
+  Hambúrguer de carne 100% bovina, queijo cheddar, picles, cebola, ketchup e mostarda
+
+- McChicken: R$ 19,90
+  Frango empanado crocante, alface fresca e maionese em pão macio
+
+=== ACOMPANHAMENTOS ===
+- Batata Frita Média: R$ 9,90
+  Batatas fritas sequinhas e douradas, feitas na hora
+
+- McNuggets 10 unidades: R$ 15,90
+  Pedaços de frango branco empanados e crocantes, acompanha molho à escolha
+
+=== BEBIDAS ===
+- Coca-Cola 500ml: R$ 7,90
+  Refrigerante Coca-Cola gelado
+
+=== SOBREMESAS ===
+- McFlurry Ovomaltine: R$ 13,90
+  Sorvete de baunilha cremoso com pedaços crocantes de Ovomaltine
+
+=== PROMOÇÕES ===
+- Combo Big Mac: R$ 32,90 (Big Mac + Batata Média + Coca-Cola)
+- Combo McChicken: R$ 27,90 (McChicken + Batata Média + Coca-Cola)
