@@ -15,7 +15,7 @@ export default function LocationPermission() {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
 
-        (position) => {
+        async (position) => {
           const { latitude, longitude } = position.coords;
 
  
@@ -55,7 +55,7 @@ export default function LocationPermission() {
         },
         {
           enableHighAccuracy: false, 
-          timeout: 5000,             
+          timeout: 8000,             
           maximumAge: 60000,         
         }
       );
