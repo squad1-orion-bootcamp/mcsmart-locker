@@ -7,37 +7,34 @@ import { MapPin, Zap } from "lucide-react";
 
 export default function LocationPermission() {
   const navigate = useNavigate();
-
   const [isLoading, setIsLoading] = useState(false);
 
   const handleAllow = () => {
     setIsLoading(true);
+
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          setIsLoading(false);
+
+        (position) => {
           const { latitude, longitude } = position.coords;
-          try {
-            const n8nWebhookURL = "http://localhost:5678/webhook/GetLocation";
-            
-            fetch(n8nWebhookURL, {
-              method: "POST", 
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                latitude: latitude,
-                longitude: longitude,
-                timestamp: new Date().toISOString(),
-                // Adicione outros dados úteis, como ID do pedido ou usuário
-                // orderId: "12345", 
-              }),
-            });
-            
-           
-          } catch (err) {
-            console.error("Erro ao enviar para o n8n:", err);
-          }
+
+ 
+          const n8nWebhookURL = "http://localhost:5678/webhook/GetLocation";
+          
+          fetch(n8nWebhookURL, {
+            method: "POST", 
+            keepalive: true, 
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              latitude: latitude,
+              longitude: longitude,
+              timestamp: new Date().toISOString(),
+            }),
+          }).catch((err) => console.error("Erro silencioso ao enviar para n8n:", err));
+          
+          setIsLoading(false);
           
           navigate("/order-status", { 
             state: { 
@@ -55,6 +52,11 @@ export default function LocationPermission() {
               onClick: () => handleAllow(),
             },
           });
+        },
+        {
+          enableHighAccuracy: false, 
+          timeout: 5000,             
+          maximumAge: 60000,         
         }
       );
     } else {
@@ -67,7 +69,6 @@ export default function LocationPermission() {
   };
 
   const handleDeny = () => {
-    // Continuar sem localização (sem sincronização IA)
     navigate("/order-status");
   };
 
