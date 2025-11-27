@@ -1,19 +1,21 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { McButton } from "@/components/McButton";
 import { McCard } from "@/components/McCard";
 import { MapPin, Zap } from "lucide-react";
 
 export default function LocationPermission() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const order = location.state?.order;
 
   const handleAllow = () => {
     // Simular permissão de localização
-    navigate("/order-status");
+    navigate("/order-status", { state: { order } });
   };
 
   const handleDeny = () => {
     // Continuar sem localização (sem sincronização IA)
-    navigate("/order-status");
+    navigate("/order-status", { state: { order } });
   };
 
   return (

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { McHeader } from "@/components/McHeader";
 import { McCard } from "@/components/McCard";
 import { Loader2, Brain, CheckCircle2, Package, MessageCircle } from "lucide-react";
@@ -15,6 +15,8 @@ const statusSteps = [
 
 export default function OrderStatus() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const order = location.state?.order;
   const [currentStep, setCurrentStep] = useState(0);
   const [distance, setDistance] = useState(2.5);
 
@@ -54,7 +56,7 @@ export default function OrderStatus() {
         <McCard elevated className="text-center bg-gradient-to-br from-primary/10 to-primary/5">
           <div className="py-4">
             <p className="text-sm text-muted-foreground mb-2">Número do Pedido</p>
-            <h2 className="text-4xl font-bold text-foreground">#1547</h2>
+            <h2 className="text-4xl font-bold text-foreground">#{order?.id || "1547"}</h2>
           </div>
         </McCard>
 

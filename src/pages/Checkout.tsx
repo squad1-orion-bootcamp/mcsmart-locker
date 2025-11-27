@@ -4,18 +4,38 @@ import { McHeader } from "@/components/McHeader";
 import { McButton } from "@/components/McButton";
 import { McCard } from "@/components/McCard";
 import { Lock, CreditCard, Smartphone, Box } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function Checkout() {
   const navigate = useNavigate();
+  const { items, total } = useCart();
   const [selectedMethod, setSelectedMethod] = useState<"locker" | "counter">("locker");
   const [paymentMethod, setPaymentMethod] = useState<"card" | "pix">("card");
+  const [whatsapp, setWhatsapp] = useState("");
 
   const handleConfirm = () => {
+    if (!whatsapp) {
+      alert("Por favor, informe seu WhatsApp para receber atualizações do pedido.");
+      return;
+    }
+
+    const order = {
+      id: Math.floor(Math.random() * 10000).toString(),
+      whatsapp,
+      items,
+      status: "pending",
+      total
+    };
+
+    console.log("Order created:", order);
+
     if (selectedMethod === "locker") {
-      navigate("/location-permission");
+      navigate("/location-permission", { state: { order } });
     } else {
       // Fluxo tradicional
-      navigate("/order-status");
+      navigate("/order-status", { state: { order } });
     }
   };
 
@@ -91,6 +111,50 @@ export default function Checkout() {
           </div>
         </div>
 
+        {/* Dados do Cliente */}
+        <div>
+          <h2 className="text-xl font-bold text-foreground mb-4">Seus Dados</h2>
+          <McCard className="p-4 border border-border">
+            <div className="space-y-2">
+              <Label htmlFor="whatsapp">WhatsApp para contato</Label>
+              <Input
+                id="whatsapp"
+                placeholder="(11) 99999-9999"
+                value={whatsapp}
+                onChange={(e) => {
+                  let value = e.target.value.replace(/\D/g, "");
+                  if (value.length > 11) value = value.slice(0, 11);
+                  
+                  let formatted = value;
+                  if (value.length > 10) {
+                    // Mobile: (XX) XXXXX-XXXX
+                    formatted = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+                  } else if (value.length > 6) {
+                    // Landline/Typing: (XX) XXXX-XXXX
+                    formatted = `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`;
+                  } else if (value.length > 2) {
+                    // Started number: (XX) X...
+                    formatted = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+                  } else if (value.length === 2) {
+                    // Area code complete: (XX)
+                    formatted = `(${value.slice(0, 2)})`;
+                  } else if (value.length > 0) {
+                    // Start: (X...
+                    formatted = `(${value}`;
+                  }
+                  
+                  setWhatsapp(formatted);
+                }}
+                type="tel"
+                maxLength={15}
+              />
+              <p className="text-xs text-muted-foreground">
+                Enviaremos o status do seu pedido por aqui.
+              </p>
+            </div>
+          </McCard>
+        </div>
+
         {/* Pagamento */}
         <div>
           <h2 className="text-xl font-bold text-foreground mb-4">Pagamento</h2>
@@ -148,7 +212,7 @@ export default function Checkout() {
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Subtotal</span>
-              <span className="font-semibold">R$ 79,60</span>
+              <span className="font-semibold">R$ {total.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Taxa de serviço</span>
@@ -156,7 +220,7 @@ export default function Checkout() {
             </div>
             <div className="border-t border-border pt-3 flex justify-between">
               <span className="font-bold text-lg">Total</span>
-              <span className="font-bold text-xl text-primary">R$ 79,60</span>
+              <span className="font-bold text-xl text-primary">R$ {total.toFixed(2)}</span>
             </div>
           </div>
         </McCard>

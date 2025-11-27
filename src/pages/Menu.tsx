@@ -4,6 +4,7 @@ import { McHeader } from "@/components/McHeader";
 import { McButton } from "@/components/McButton";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Minus, ShoppingCart } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
 
 const menuItems = [
   {
@@ -38,28 +39,13 @@ const menuItems = [
 
 export default function Menu() {
   const navigate = useNavigate();
-  const [cart, setCart] = useState<Record<number, number>>({});
+  const { items, addToCart, removeFromCart, total } = useCart();
 
-  const addToCart = (itemId: number) => {
-    setCart(prev => ({ ...prev, [itemId]: (prev[itemId] || 0) + 1 }));
+  const getQuantity = (itemId: number) => {
+    return items.find(item => item.id === itemId)?.quantity || 0;
   };
 
-  const removeFromCart = (itemId: number) => {
-    setCart(prev => {
-      const newCart = { ...prev };
-      if (newCart[itemId] > 1) {
-        newCart[itemId]--;
-      } else {
-        delete newCart[itemId];
-      }
-      return newCart;
-    });
-  };
-
-  const totalItems = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
-  const totalPrice = menuItems.reduce((sum, item) => 
-    sum + (cart[item.id] || 0) * item.price, 0
-  );
+  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <div className="min-h-screen bg-background pb-32">
@@ -88,7 +74,7 @@ export default function Menu() {
                     R$ {item.price.toFixed(2)}
                   </span>
                   
-                  {cart[item.id] ? (
+                  {getQuantity(item.id) > 0 ? (
                     <div className="flex items-center gap-3 bg-muted rounded-xl p-1">
                       <button
                         onClick={() => removeFromCart(item.id)}
@@ -97,10 +83,10 @@ export default function Menu() {
                         <Minus className="h-4 w-4" />
                       </button>
                       <span className="font-semibold min-w-[2ch] text-center">
-                        {cart[item.id]}
+                        {getQuantity(item.id)}
                       </span>
                       <button
-                        onClick={() => addToCart(item.id)}
+                        onClick={() => addToCart(item)}
                         className="p-2 rounded-lg hover:bg-background transition-colors"
                       >
                         <Plus className="h-4 w-4" />
@@ -108,7 +94,7 @@ export default function Menu() {
                     </div>
                   ) : (
                     <button
-                      onClick={() => addToCart(item.id)}
+                      onClick={() => addToCart(item)}
                       className="px-4 py-2 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-colors"
                     >
                       Adicionar
@@ -131,7 +117,7 @@ export default function Menu() {
               </span>
             </div>
             <span className="text-xl font-bold text-foreground">
-              R$ {totalPrice.toFixed(2)}
+              R$ {total.toFixed(2)}
             </span>
           </div>
           
