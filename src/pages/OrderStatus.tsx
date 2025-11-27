@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { McHeader } from "@/components/McHeader";
 import { McCard } from "@/components/McCard";
-import { Loader2, Brain, CheckCircle2, Package } from "lucide-react";
+import { Loader2, Brain, CheckCircle2, Package, MessageCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { openWhatsApp } from "@/lib/whatsapp";
 
 const statusSteps = [
   { label: "Pedido confirmado", progress: 25, icon: CheckCircle2 },
@@ -114,6 +115,34 @@ export default function OrderStatus() {
             </div>
           </McCard>
         )}
+
+        {/* MéquiZap Promo Banner */}
+        <McCard className="bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center">
+              <MessageCircle className="h-6 w-6 text-primary" />
+            </div>
+            <div className="flex-1 space-y-3">
+              <div>
+                <h3 className="font-semibold text-foreground mb-1">
+                  Já pensou pedir direto pelo WhatsApp? 🤖📱
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Conheça o MéquiZap: nossa IA que faz pedidos rapidinho no zap!
+                </p>
+              </div>
+              <button
+                onClick={() =>
+                  openWhatsApp()
+                }
+                className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors inline-flex items-center gap-1"
+              >
+                Abrir no WhatsApp
+                <span className="text-lg">→</span>
+              </button>
+            </div>
+          </div>
+        </McCard>
 
         {/* Timeline de Status */}
         <McCard elevated>
