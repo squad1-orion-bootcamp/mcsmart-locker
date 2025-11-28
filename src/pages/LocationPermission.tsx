@@ -19,9 +19,9 @@ export default function LocationPermission() {
           const { latitude, longitude } = position.coords;
 
  
-          const n8nWebhookURL = "http://localhost:5678/webhook/GetLocation";
+          const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL;
           
-          fetch(n8nWebhookURL, {
+          fetch(N8N_WEBHOOK_URL, {
             method: "POST", 
             keepalive: true, 
             headers: {
@@ -32,7 +32,15 @@ export default function LocationPermission() {
               longitude: longitude,
               timestamp: new Date().toISOString(),
             }),
-          }).catch((err) => console.error("Erro silencioso ao enviar para n8n:", err));
+          }).catch((err) => {
+            toast("Erro ao obter localização", {
+              description: "Não foi possível enviar seus dados para o servidor. Por favor, verifique sua internet",
+              action: {
+                label: "Tentar novamente",
+                onClick: () => handleAllow(),
+              },
+            });
+          });
           
           setIsLoading(false);
           
