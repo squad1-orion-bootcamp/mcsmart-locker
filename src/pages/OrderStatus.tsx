@@ -21,29 +21,62 @@ export default function OrderStatus() {
   const [distance, setDistance] = useState(2.5);
 
   useEffect(() => {
-    // Simular progresso
-    const timer = setInterval(() => {
-      setCurrentStep(prev => {
-        if (prev < statusSteps.length - 1) {
-          return prev + 1;
-        } else {
-          clearInterval(timer);
-          setTimeout(() => navigate("/locker-ready"), 2000);
-          return prev;
-        }
-      });
-    }, 3000);
+    const controller = new AbortController();
+    const signal = controller.signal;
 
-    // Simular aproximação
-    const distanceTimer = setInterval(() => {
-      setDistance(prev => Math.max(0, prev - 0.1));
-    }, 2000);
+    const fetchStatus = async () => {
+      try {
+        const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_ORDER_STATUS_WEBHOOK_URL;
+        if (!N8N_WEBHOOK_URL) {
+          console.warn("VITE_N8N_ORDER_STATUS_WEBHOOK_URL not configured");
+          return;
+        }
+
+        const response = await fetch(N8N_WEBHOOK_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            orderId: order?.id,
+            currentStep: currentStep, // Optional: send current state so server knows what changed
+          }),
+          signal,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (typeof data.step === 'number') {
+            setCurrentStep(data.step);
+            if (data.step === 3) {
+              setTimeout(() => navigate("/locker-ready"), 2000);
+              return; // Stop polling if ready
+            }
+          }
+          
+          if (typeof data.distance === 'number') {
+            setDistance(data.distance);
+          }
+        }
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          return; 
+        }
+        console.error("Error fetching order status:", error);
+      } finally {
+        if (!signal.aborted) {
+          setTimeout(fetchStatus, 1000);
+        }
+      }
+    };
+
+    fetchStatus();
 
     return () => {
-      clearInterval(timer);
-      clearInterval(distanceTimer);
+      controller.abort();
     };
-  }, [navigate]);
+  }, [navigate, order?.id, currentStep]);
 
   const step = statusSteps[currentStep];
 
