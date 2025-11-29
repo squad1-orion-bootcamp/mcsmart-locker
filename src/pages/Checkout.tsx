@@ -3,39 +3,72 @@ import { useNavigate } from "react-router-dom";
 import { McHeader } from "@/components/McHeader";
 import { McButton } from "@/components/McButton";
 import { McCard } from "@/components/McCard";
-import { Lock, CreditCard, Smartphone, Box } from "lucide-react";
+import { Lock, CreditCard, Smartphone, Box, Loader2 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export default function Checkout() {
   const navigate = useNavigate();
   const { items, total } = useCart();
+  const { toast } = useToast();
   const [selectedMethod, setSelectedMethod] = useState<"locker" | "counter">("locker");
   const [paymentMethod, setPaymentMethod] = useState<"card" | "pix">("card");
   const [whatsapp, setWhatsapp] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!whatsapp) {
-      alert("Por favor, informe seu WhatsApp para receber atualizações do pedido.");
+      toast({
+        title: "WhatsApp necessário",
+        description: "Por favor, informe seu WhatsApp para receber atualizações do pedido.",
+        variant: "destructive",
+      });
       return;
     }
+
+    setIsSubmitting(true);
 
     const order = {
       id: Math.floor(Math.random() * 10000).toString(),
       whatsapp,
       items,
       status: "pending",
-      total
+      total,
+      paymentMethod,
+      pickupMethod: selectedMethod
     };
 
-    console.log("Order created:", order);
+    try {
+      const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_CREATE_ORDER_WEBHOOK_URL;
+      
+      if (N8N_WEBHOOK_URL) {
+        await fetch(N8N_WEBHOOK_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(order),
+        });
+      } else {
+        console.warn("VITE_N8N_CREATE_ORDER_WEBHOOK_URL not configured");
+      }
 
-    if (selectedMethod === "locker") {
-      navigate("/location-permission", { state: { order } });
-    } else {
-      // Fluxo tradicional
-      navigate("/order-status", { state: { order } });
+      if (selectedMethod === "locker") {
+        navigate("/location-permission", { state: { order } });
+      } else {
+        navigate("/order-status", { state: { order } });
+      }
+    } catch (error) {
+      console.error("Error creating order:", error);
+      toast({
+        title: "Erro ao criar pedido",
+        description: "Houve um problema ao processar seu pedido. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -228,8 +261,8 @@ export default function Checkout() {
 
       {/* Bottom Action */}
       <div className="fixed bottom-0 left-0 right-0 p-6 bg-background border-t border-border">
-        <McButton onClick={handleConfirm} icon={Lock}>
-          Confirmar Pedido
+        <McButton onClick={handleConfirm} icon={isSubmitting ? Loader2 : Lock} disabled={isSubmitting}>
+          {isSubmitting ? "Processando..." : "Confirmar Pedido"}
         </McButton>
       </div>
     </div>

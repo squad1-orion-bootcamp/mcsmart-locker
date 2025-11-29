@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 import { McHeader } from "@/components/McHeader";
 import { McCard } from "@/components/McCard";
 import { Loader2, Brain, CheckCircle2, Package, MessageCircle } from "lucide-react";
@@ -16,6 +17,7 @@ const statusSteps = [
 export default function OrderStatus() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
   const order = location.state?.order;
   const [currentStep, setCurrentStep] = useState(0);
   const [distance, setDistance] = useState(2.5);
@@ -28,7 +30,11 @@ export default function OrderStatus() {
       try {
         const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_ORDER_STATUS_WEBHOOK_URL;
         if (!N8N_WEBHOOK_URL) {
-          console.warn("VITE_N8N_ORDER_STATUS_WEBHOOK_URL not configured");
+          toast({
+            title: "Erro de Configuração",
+            description: "URL do webhook não configurada.",
+            variant: "destructive",
+          });
           return;
         }
 
@@ -45,10 +51,32 @@ export default function OrderStatus() {
         });
 
         if (response.ok) {
-          const data = await response.json();
+          const text = await response.text();
           
+          if (!text) {
+            toast({
+              title: "Erro no Servidor",
+              description: "Resposta vazia do servidor.",
+              variant: "destructive",
+            });
+            return;
+          }
+
+          let data;
+          try {
+            data = JSON.parse(text);
+            
+          } catch (e) {
+            toast({
+              title: "Erro de Dados",
+              description: "Resposta inválida do servidor.",
+              variant: "destructive",
+            });
+            return;
+          }
+          setCurrentStep(data);
           if (typeof data.step === 'number') {
-            setCurrentStep(data.step);
+            setCurrentStep(data);
             if (data.step === 3) {
               setTimeout(() => navigate("/locker-ready"), 2000);
               return; // Stop polling if ready
@@ -63,10 +91,14 @@ export default function OrderStatus() {
         if (error instanceof Error && error.name === 'AbortError') {
           return; 
         }
-        console.error("Error fetching order status:", error);
+        toast({
+          title: "Erro de Conexão",
+          description: "Não foi possível buscar o status do pedido.",
+          variant: "destructive",
+        });
       } finally {
         if (!signal.aborted) {
-          setTimeout(fetchStatus, 1000);
+          setTimeout(fetchStatus, 10000);
         }
       }
     };
