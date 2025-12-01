@@ -1,16 +1,49 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { McButton } from "@/components/McButton";
 import { McCard } from "@/components/McCard";
-import { CheckCircle2, Star, Home } from "lucide-react";
+import { CheckCircle2, Star, Home, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function PickupConfirmed() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
+  const order = location.state?.order;
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleFinish = () => {
-    // Enviar avaliação e voltar ao início
+  const handleFinish = async () => {
+    if (rating > 0 && order?.id) {
+      setIsSubmitting(true);
+      try {
+        const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_FEEDBACK_WEBHOOK_URL;
+        
+        if (N8N_WEBHOOK_URL) {
+          await fetch(N8N_WEBHOOK_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              orderId: order.id,
+              rating,
+            }),
+          });
+        }
+        
+        toast({
+          title: "Obrigado!",
+          description: "Seu feedback foi enviado com sucesso.",
+        });
+      } catch (error) {
+        console.error("Erro ao enviar feedback:", error);
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+    
     navigate("/stores");
   };
 
@@ -36,7 +69,7 @@ export default function PickupConfirmed() {
         <McCard elevated className="bg-gradient-to-br from-primary/5 to-primary/10">
           <div className="text-center py-4 space-y-2">
             <p className="text-sm text-muted-foreground">Pedido</p>
-            <p className="text-3xl font-bold text-foreground">#1547</p>
+            <p className="text-3xl font-bold text-foreground">#{order?.id || "----"}</p>
             <div className="pt-2 border-t border-border/50 mt-4">
               <p className="text-sm text-muted-foreground">Retirado às</p>
               <p className="font-semibold text-foreground">18:32</p>
@@ -110,8 +143,8 @@ export default function PickupConfirmed() {
 
         {/* Actions */}
         <div className="space-y-3">
-          <McButton onClick={handleFinish} icon={Home}>
-            Fazer Novo Pedido
+          <McButton onClick={handleFinish} icon={isSubmitting ? Loader2 : Home} disabled={isSubmitting}>
+            {isSubmitting ? "Enviando..." : "Fazer Novo Pedido"}
           </McButton>
           
           <button

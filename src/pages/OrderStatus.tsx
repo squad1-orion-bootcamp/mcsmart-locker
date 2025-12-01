@@ -45,7 +45,7 @@ export default function OrderStatus() {
           },
           body: JSON.stringify({
             orderId: order?.id,
-            currentStep: currentStep, // Optional: send current state so server knows what changed
+
           }),
           signal,
         });
@@ -54,37 +54,42 @@ export default function OrderStatus() {
           const text = await response.text();
           
           if (!text) {
-            toast({
-              title: "Erro no Servidor",
-              description: "Resposta vazia do servidor.",
-              variant: "destructive",
-            });
             return;
           }
 
-          let data;
+          let newStep = currentStep;
+          let newDistance = distance;
+          let parsed = false;
+
           try {
-            data = JSON.parse(text);
-            
+            const data = JSON.parse(text);
+            if (typeof data.step === 'number') newStep = data.step;
+            if (typeof data.distance === 'number') newDistance = data.distance;
+            parsed = true;
           } catch (e) {
-            toast({
-              title: "Erro de Dados",
-              description: "Resposta inválida do servidor.",
-              variant: "destructive",
-            });
-            return;
-          }
-          setCurrentStep(data);
-          if (typeof data.step === 'number') {
-            setCurrentStep(data);
-            if (data.step === 3) {
-              setTimeout(() => navigate("/locker-ready"), 2000);
-              return; // Stop polling if ready
+            try {
+              const parts = text.replace(/['"]/g, '').split(',');
+              if (parts.length >= 2) {
+                const s = parseInt(parts[0].trim());
+                const d = parseFloat(parts[1].trim());
+                
+                if (!isNaN(s)) newStep = s;
+                if (!isNaN(d)) newDistance = d;
+                parsed = true;
+              }
+            } catch (err) {
+              console.error("Failed to parse webhook response:", text);
             }
           }
-          
-          if (typeof data.distance === 'number') {
-            setDistance(data.distance);
+
+          if (parsed) {
+            setCurrentStep(newStep);
+            setDistance(newDistance);
+            
+            if (newStep === 3) {
+              setTimeout(() => navigate("/locker-ready", { state: { order } }), 2000);
+              return; 
+            }
           }
         }
       } catch (error) {

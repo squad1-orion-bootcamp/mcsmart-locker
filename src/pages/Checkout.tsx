@@ -6,35 +6,43 @@ import { McCard } from "@/components/McCard";
 import { Lock, CreditCard, Smartphone, Box, Loader2 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useUser } from "@/contexts/UserContext";
+
 
 export default function Checkout() {
   const navigate = useNavigate();
   const { items, total } = useCart();
   const { toast } = useToast();
+  const { whatsapp } = useUser();
   const [selectedMethod, setSelectedMethod] = useState<"locker" | "counter">("locker");
   const [paymentMethod, setPaymentMethod] = useState<"card" | "pix">("card");
-  const [whatsapp, setWhatsapp] = useState("");
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleConfirm = async () => {
-    if (!whatsapp) {
+    if (items.length === 0) {
       toast({
-        title: "WhatsApp necessário",
-        description: "Por favor, informe seu WhatsApp para receber atualizações do pedido.",
+        title: "Carrinho vazio",
+        description: "Adicione itens ao carrinho antes de finalizar o pedido.",
         variant: "destructive",
       });
       return;
     }
+
+
 
     setIsSubmitting(true);
 
     const order = {
       id: Math.floor(Math.random() * 10000).toString(),
       whatsapp,
-      items,
-      status: "pending",
+      items: items.map(item => ({
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+        total: item.price * item.quantity
+      })),
       total,
       paymentMethod,
       pickupMethod: selectedMethod
@@ -51,8 +59,6 @@ export default function Checkout() {
           },
           body: JSON.stringify(order),
         });
-      } else {
-        console.warn("VITE_N8N_CREATE_ORDER_WEBHOOK_URL not configured");
       }
 
       if (selectedMethod === "locker") {
@@ -61,7 +67,6 @@ export default function Checkout() {
         navigate("/order-status", { state: { order } });
       }
     } catch (error) {
-      console.error("Error creating order:", error);
       toast({
         title: "Erro ao criar pedido",
         description: "Houve um problema ao processar seu pedido. Tente novamente.",
@@ -144,49 +149,7 @@ export default function Checkout() {
           </div>
         </div>
 
-        {/* Dados do Cliente */}
-        <div>
-          <h2 className="text-xl font-bold text-foreground mb-4">Seus Dados</h2>
-          <McCard className="p-4 border border-border">
-            <div className="space-y-2">
-              <Label htmlFor="whatsapp">WhatsApp para contato</Label>
-              <Input
-                id="whatsapp"
-                placeholder="(11) 99999-9999"
-                value={whatsapp}
-                onChange={(e) => {
-                  let value = e.target.value.replace(/\D/g, "");
-                  if (value.length > 11) value = value.slice(0, 11);
-                  
-                  let formatted = value;
-                  if (value.length > 10) {
-                    // Mobile: (XX) XXXXX-XXXX
-                    formatted = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
-                  } else if (value.length > 6) {
-                    // Landline/Typing: (XX) XXXX-XXXX
-                    formatted = `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`;
-                  } else if (value.length > 2) {
-                    // Started number: (XX) X...
-                    formatted = `(${value.slice(0, 2)}) ${value.slice(2)}`;
-                  } else if (value.length === 2) {
-                    // Area code complete: (XX)
-                    formatted = `(${value.slice(0, 2)})`;
-                  } else if (value.length > 0) {
-                    // Start: (X...
-                    formatted = `(${value}`;
-                  }
-                  
-                  setWhatsapp(formatted);
-                }}
-                type="tel"
-                maxLength={15}
-              />
-              <p className="text-xs text-muted-foreground">
-                Enviaremos o status do seu pedido por aqui.
-              </p>
-            </div>
-          </McCard>
-        </div>
+
 
         {/* Pagamento */}
         <div>

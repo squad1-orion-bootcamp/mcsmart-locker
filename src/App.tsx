@@ -13,12 +13,14 @@ import LockerReady from "./pages/LockerReady";
 import PickupConfirmed from "./pages/PickupConfirmed";
 import NotFound from "./pages/NotFound";
 import { CartProvider } from "./contexts/CartContext";
+import { UserProvider } from "./contexts/UserContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <CartProvider>
+    <UserProvider>
+      <CartProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -38,7 +40,8 @@ const App = () => (
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
-    </CartProvider>
+      </CartProvider>
+    </UserProvider>
   </QueryClientProvider>
 );
 
