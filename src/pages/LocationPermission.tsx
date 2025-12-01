@@ -56,8 +56,8 @@ export default function LocationPermission() {
         </McCard>
 
         <div className="space-y-3">
-          <McButton onClick={handleAllow}>
-            Permitir Localização
+          <McButton onClick={handleAllow} disabled={isLoading}>
+            {isLoading ? "Obtendo localização..." : "Permitir Localização"}
           </McButton>
           
           <button
