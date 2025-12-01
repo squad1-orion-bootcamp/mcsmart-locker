@@ -152,7 +152,7 @@ export default function Onboarding() {
         <DialogContent className="sm:max-w-md rounded-xl border-0 p-0 gap-0 bg-card ">
           <div className="p-6 pb-4">
             <DialogHeader className="space-y-3 text-center text-center">
-              <div className="mx-auto w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-2 text-center">
+              <div className="mx-auto w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-2">
                 <MessageCircle className="h-7 w-7 text-primary" strokeWidth={2.5} />
               </div>
               <DialogTitle className="text-xl font-bold text-foreground text-center">
