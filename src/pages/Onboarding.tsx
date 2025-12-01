@@ -149,23 +149,23 @@ export default function Onboarding() {
 
       {/* MéquiZap WhatsApp Modal */}
       <Dialog open={showWhatsAppModal} onOpenChange={setShowWhatsAppModal}>
-        <DialogContent className="sm:max-w-md rounded-xl border-0 p-0 gap-0 bg-card">
+        <DialogContent className="sm:max-w-md rounded-xl border-0 p-0 gap-0 bg-card ">
           <div className="p-6 pb-4">
-            <DialogHeader className="space-y-3 text-center">
-              <div className="mx-auto w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+            <DialogHeader className="space-y-3 text-center text-center">
+              <div className="mx-auto w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-2 text-center">
                 <MessageCircle className="h-7 w-7 text-primary" strokeWidth={2.5} />
               </div>
-              <DialogTitle className="text-xl font-bold text-foreground">
+              <DialogTitle className="text-xl font-bold text-foreground text-center">
                 Conheça o MéquiZap 💛
               </DialogTitle>
-              <DialogDescription className="text-sm text-[hsl(var(--mcd-text-secondary))] leading-relaxed">
+              <DialogDescription className="text-sm text-[hsl(var(--mcd-text-secondary))] leading-relaxed text-center">
                 Peça pelo WhatsApp com o Ronald, nossa IA oficial. Salve o contato e deixe tudo mais rápido.
               </DialogDescription>
             </DialogHeader>
           </div>
           
           <div className="p-6 pt-2 space-y-4">
-            <div className="space-y-2">
+            <div className="space-y-2 ">
               <label className="text-sm font-bold text-foreground">Seu telefone</label>
               <input
                 type="tel"
