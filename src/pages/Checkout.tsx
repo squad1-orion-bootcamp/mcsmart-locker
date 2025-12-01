@@ -41,7 +41,8 @@ export default function Checkout() {
         name: item.name,
         quantity: item.quantity,
         price: item.price,
-        total: item.price * item.quantity
+        total: item.price * item.quantity,
+        rating: null,
       })),
       total,
       paymentMethod,
