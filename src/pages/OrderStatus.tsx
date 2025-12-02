@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 import { McHeader } from "@/components/McHeader";
 import { McCard } from "@/components/McCard";
 import { Loader2, Brain, CheckCircle2, Package, MessageCircle } from "lucide-react";
@@ -15,33 +16,104 @@ const statusSteps = [
 
 export default function OrderStatus() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
+  const order = location.state?.order;
   const [currentStep, setCurrentStep] = useState(0);
   const [distance, setDistance] = useState(2.5);
 
   useEffect(() => {
-    // Simular progresso
-    const timer = setInterval(() => {
-      setCurrentStep(prev => {
-        if (prev < statusSteps.length - 1) {
-          return prev + 1;
-        } else {
-          clearInterval(timer);
-          setTimeout(() => navigate("/locker-ready"), 2000);
-          return prev;
-        }
-      });
-    }, 3000);
+    const controller = new AbortController();
+    const signal = controller.signal;
 
-    // Simular aproximação
-    const distanceTimer = setInterval(() => {
-      setDistance(prev => Math.max(0, prev - 0.1));
-    }, 2000);
+    const fetchStatus = async () => {
+      try {
+        const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_ORDER_STATUS_WEBHOOK_URL;
+        if (!N8N_WEBHOOK_URL) {
+          toast({
+            title: "Erro de Configuração",
+            description: "URL do webhook não configurada.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const response = await fetch(N8N_WEBHOOK_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            orderId: order?.id,
+
+          }),
+          signal,
+        });
+
+        if (response.ok) {
+          const text = await response.text();
+          
+          if (!text) {
+            return;
+          }
+
+          let newStep = currentStep;
+          let newDistance = distance;
+          let parsed = false;
+
+          try {
+            const data = JSON.parse(text);
+            if (typeof data.step === 'number') newStep = data.step;
+            if (typeof data.distance === 'number') newDistance = data.distance;
+            parsed = true;
+          } catch (e) {
+            try {
+              const parts = text.replace(/['"]/g, '').split(',');
+              if (parts.length >= 2) {
+                const s = parseInt(parts[0].trim());
+                const d = parseFloat(parts[1].trim());
+                
+                if (!isNaN(s)) newStep = s;
+                if (!isNaN(d)) newDistance = d;
+                parsed = true;
+              }
+            } catch (err) {
+              console.error("Failed to parse webhook response:", text);
+            }
+          }
+
+          if (parsed) {
+            setCurrentStep(newStep);
+            setDistance(newDistance);
+            
+            if (newStep === 3) {
+              setTimeout(() => navigate("/locker-ready", { state: { order } }), 2000);
+              return; 
+            }
+          }
+        }
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          return; 
+        }
+        toast({
+          title: "Erro de Conexão",
+          description: "Não foi possível buscar o status do pedido.",
+          variant: "destructive",
+        });
+      } finally {
+        if (!signal.aborted) {
+          setTimeout(fetchStatus, 10000);
+        }
+      }
+    };
+
+    fetchStatus();
 
     return () => {
-      clearInterval(timer);
-      clearInterval(distanceTimer);
+      controller.abort();
     };
-  }, [navigate]);
+  }, [navigate, order?.id, currentStep]);
 
   const step = statusSteps[currentStep];
 
@@ -54,7 +126,7 @@ export default function OrderStatus() {
         <McCard elevated className="text-center bg-gradient-to-br from-primary/10 to-primary/5">
           <div className="py-4">
             <p className="text-sm text-muted-foreground mb-2">Número do Pedido</p>
-            <h2 className="text-4xl font-bold text-foreground">#1547</h2>
+            <h2 className="text-4xl font-bold text-foreground">#{order?.id || "1547"}</h2>
           </div>
         </McCard>
 

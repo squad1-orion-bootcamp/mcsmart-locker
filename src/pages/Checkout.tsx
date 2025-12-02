@@ -3,19 +3,78 @@ import { useNavigate } from "react-router-dom";
 import { McHeader } from "@/components/McHeader";
 import { McButton } from "@/components/McButton";
 import { McCard } from "@/components/McCard";
-import { Lock, CreditCard, Smartphone, Box } from "lucide-react";
+import { Lock, CreditCard, Smartphone, Box, Loader2 } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
+import { useToast } from "@/hooks/use-toast";
+import { useUser } from "@/contexts/UserContext";
+
 
 export default function Checkout() {
   const navigate = useNavigate();
+  const { items, total } = useCart();
+  const { toast } = useToast();
+  const { whatsapp } = useUser();
   const [selectedMethod, setSelectedMethod] = useState<"locker" | "counter">("locker");
   const [paymentMethod, setPaymentMethod] = useState<"card" | "pix">("card");
 
-  const handleConfirm = () => {
-    if (selectedMethod === "locker") {
-      navigate("/location-permission");
-    } else {
-      // Fluxo tradicional
-      navigate("/order-status");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleConfirm = async () => {
+    if (items.length === 0) {
+      toast({
+        title: "Carrinho vazio",
+        description: "Adicione itens ao carrinho antes de finalizar o pedido.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+
+
+    setIsSubmitting(true);
+
+    const order = {
+      id: Math.floor(Math.random() * 10000).toString(),
+      whatsapp,
+      items: items.map(item => ({
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+        total: item.price * item.quantity,
+        rating: null,
+      })),
+      total,
+      paymentMethod,
+      pickupMethod: selectedMethod
+    };
+
+    try {
+      const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_CREATE_ORDER_WEBHOOK_URL;
+      
+      if (N8N_WEBHOOK_URL) {
+        await fetch(N8N_WEBHOOK_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(order),
+        });
+      }
+
+      if (selectedMethod === "locker") {
+        navigate("/location-permission", { state: { order } });
+      } else {
+        navigate("/order-status", { state: { order } });
+      }
+    } catch (error) {
+      toast({
+        title: "Erro ao criar pedido",
+        description: "Houve um problema ao processar seu pedido. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -91,6 +150,8 @@ export default function Checkout() {
           </div>
         </div>
 
+
+
         {/* Pagamento */}
         <div>
           <h2 className="text-xl font-bold text-foreground mb-4">Pagamento</h2>
@@ -148,7 +209,7 @@ export default function Checkout() {
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Subtotal</span>
-              <span className="font-semibold">R$ 79,60</span>
+              <span className="font-semibold">R$ {total.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Taxa de serviço</span>
@@ -156,7 +217,7 @@ export default function Checkout() {
             </div>
             <div className="border-t border-border pt-3 flex justify-between">
               <span className="font-bold text-lg">Total</span>
-              <span className="font-bold text-xl text-primary">R$ 79,60</span>
+              <span className="font-bold text-xl text-primary">R$ {total.toFixed(2)}</span>
             </div>
           </div>
         </McCard>
@@ -164,8 +225,8 @@ export default function Checkout() {
 
       {/* Bottom Action */}
       <div className="fixed bottom-0 left-0 right-0 p-6 bg-background border-t border-border">
-        <McButton onClick={handleConfirm} icon={Lock}>
-          Confirmar Pedido
+        <McButton onClick={handleConfirm} icon={isSubmitting ? Loader2 : Lock} disabled={isSubmitting}>
+          {isSubmitting ? "Processando..." : "Confirmar Pedido"}
         </McButton>
       </div>
     </div>

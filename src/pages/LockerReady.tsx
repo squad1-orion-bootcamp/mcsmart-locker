@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { McHeader } from "@/components/McHeader";
 import { McButton } from "@/components/McButton";
 import { McCard } from "@/components/McCard";
@@ -8,6 +8,8 @@ import QRCode from "react-qr-code";
 
 export default function LockerReady() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const order = location.state?.order;
   const [showCode, setShowCode] = useState(false);
   const [accessCode] = useState(
     () => String(Math.floor(Math.random() * 1_000_000)).padStart(6, "0")
@@ -16,7 +18,7 @@ export default function LockerReady() {
   const handleOpenLocker = () => {
     // Simular abertura do locker
     setTimeout(() => {
-      navigate("/pickup-confirmed");
+      navigate("/pickup-confirmed", { state: { order } });
     }, 2000);
   };
 

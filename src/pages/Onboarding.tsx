@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { openWhatsApp } from "@/lib/whatsapp";
+import { useUser } from "@/contexts/UserContext";
 
 const onboardingSteps = [
   {
@@ -35,8 +36,27 @@ const onboardingSteps = [
 
 export default function Onboarding() {
   const navigate = useNavigate();
+  const { whatsapp, setWhatsapp } = useUser();
   const [currentStep, setCurrentStep] = useState(0);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, "");
+    if (value.length > 11) value = value.slice(0, 11);
+    
+    let formatted = value;
+    if (value.length > 10) {
+      formatted = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+    } else if (value.length > 6) {
+      formatted = `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`;
+    } else if (value.length > 2) {
+      formatted = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+    } else if (value.length > 0) {
+      formatted = `(${value.slice(0, 2)}`;
+    }
+    
+    setWhatsapp(formatted);
+  };
 
   const handleNext = () => {
     if (currentStep < onboardingSteps.length - 1) {
@@ -51,8 +71,7 @@ export default function Onboarding() {
     navigate("/stores");
   };
 
-  const handleWhatsAppSkip = () => {
-    setShowWhatsAppModal(false);
+  const handleStayInApp = () => {
     navigate("/stores");
   };
 
@@ -130,32 +149,45 @@ export default function Onboarding() {
 
       {/* MéquiZap WhatsApp Modal */}
       <Dialog open={showWhatsAppModal} onOpenChange={setShowWhatsAppModal}>
-        <DialogContent className="sm:max-w-md border-0 p-0 gap-0 bg-card">
+        <DialogContent className="sm:max-w-md rounded-xl border-0 p-0 gap-0 bg-card">
           <div className="p-6 pb-4">
             <DialogHeader className="space-y-3 text-center">
-              <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                <MessageCircle className="h-8 w-8 text-primary" />
+              <div className="mx-auto w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                <MessageCircle className="h-7 w-7 text-primary" strokeWidth={2.5} />
               </div>
-              <DialogTitle className="text-2xl font-bold text-foreground">
-                Conheça o MéquiZap! 💛
+              <DialogTitle className="text-xl font-bold text-foreground">
+                Conheça o MéquiZap 💛
               </DialogTitle>
-              <DialogDescription className="text-base text-muted-foreground leading-relaxed">
-                Peça pelo WhatsApp de forma rápida e simples. A mesma
-                experiência do Méqui, direto no seu zap!
+              <DialogDescription className="text-sm text-[hsl(var(--mcd-text-secondary))] leading-relaxed">
+                Peça pelo WhatsApp com o Ronald, nossa IA oficial. Salve o contato e deixe tudo mais rápido.
               </DialogDescription>
             </DialogHeader>
           </div>
-
-          <div className="p-6 pt-2 space-y-3">
-            <McButton onClick={handleWhatsAppCTA} icon={MessageCircle}>
-              Quero testar no WhatsApp
-            </McButton>
-            <button
-              onClick={handleWhatsAppSkip}
-              className="w-full py-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Agora não
-            </button>
+          
+          <div className="p-6 pt-2 space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-foreground">Seu telefone</label>
+              <input
+                type="tel"
+                value={whatsapp}
+                onChange={handlePhoneChange}
+                placeholder="(00) 00000-0000"
+                className="w-full h-12 px-4 rounded-xl border border-[hsl(var(--mcd-divider))] bg-background text-foreground placeholder:text-[hsl(var(--mcd-text-secondary))] focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 gap-3">
+              <McButton onClick={handleWhatsAppCTA} icon={MessageCircle} disabled={whatsapp.length < 15}>
+                Salvar e abrir WhatsApp
+              </McButton>
+              <button
+                onClick={handleStayInApp}
+                disabled={whatsapp.length < 15}
+                className="w-full py-3 text-sm font-bold text-primary bg-primary/10 rounded-xl hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Continuar no app
+              </button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
