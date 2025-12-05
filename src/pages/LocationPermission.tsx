@@ -9,8 +9,69 @@ export default function LocationPermission() {
   const order = location.state?.order;
 
   const handleAllow = () => {
-    // Simular permissão de localização
-    navigate("/order-status", { state: { order } });
+    setIsLoading(true);
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          
+          const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_LOCATION_WEBHOOK_URL;
+          
+          fetch(N8N_WEBHOOK_URL, {
+            method: "POST", 
+            keepalive: true, 
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              latitude: latitude,
+              longitude: longitude,
+              timestamp: new Date().toISOString(),
+            }),
+          }).catch((err) => {
+            toast("Erro ao obter localização", {
+              description: "Não foi possível enviar seus dados para o servidor. Por favor, verifique sua internet",
+              action: {
+                label: "Tentar novamente",
+                onClick: () => handleAllow(),
+              },
+            });
+          });
+          
+          setIsLoading(false);
+          
+          navigate("/order-status", { 
+            state: { 
+              location: { lat: latitude, lng: longitude } 
+            } 
+          });
+        },
+        (error) => {
+          setIsLoading(false);
+          console.error("Error getting location:", error);
+          toast("Erro ao obter localização", {
+            description: "Não foi possível obter sua localização. Verifique as permissões do navegador.",
+            action: {
+              label: "Tentar novamente",
+              onClick: () => handleAllow(),
+            },
+          });
+        },
+        {
+          enableHighAccuracy: false, 
+          timeout: 10000,             
+          maximumAge: 60000,         
+        }
+      );
+    } else {
+      setIsLoading(false);
+      toast("Geolocalização não suportada", {
+        description: "Seu navegador não suporta geolocalização.",
+      });
+      navigate("/order-status");
+    }
   };
 
   const handleDeny = () => {
