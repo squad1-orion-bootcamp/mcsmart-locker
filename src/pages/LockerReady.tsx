@@ -1,18 +1,24 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { McHeader } from "@/components/McHeader";
 import { McButton } from "@/components/McButton";
 import { McCard } from "@/components/McCard";
-import { QrCode, MapPin, Clock, Box } from "lucide-react";
+import { MapPin, Clock, Box } from "lucide-react";
+import QRCode from "react-qr-code";
 
 export default function LockerReady() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const order = location.state?.order;
   const [showCode, setShowCode] = useState(false);
+  const [accessCode] = useState(
+    () => String(Math.floor(Math.random() * 1_000_000)).padStart(6, "0")
+  );
 
   const handleOpenLocker = () => {
     // Simular abertura do locker
     setTimeout(() => {
-      navigate("/pickup-confirmed");
+      navigate("/pickup-confirmed", { state: { order } });
     }, 2000);
   };
 
@@ -92,9 +98,13 @@ export default function LockerReady() {
 
             <div className="flex justify-center">
               <div className="p-6 bg-white rounded-2xl shadow-lg">
-                {/* QR Code simulado */}
-                <div className="w-48 h-48 bg-foreground rounded-lg flex items-center justify-center">
-                  <QrCode className="h-32 w-32 text-background" />
+                <div className="bg-white rounded-lg flex items-center justify-center">
+                  <QRCode
+                    value={accessCode}
+                    size={192}
+                    bgColor="#FFFFFF"
+                    fgColor="#000000"
+                  />
                 </div>
               </div>
             </div>
@@ -106,7 +116,7 @@ export default function LockerReady() {
                   onClick={() => setShowCode(!showCode)}
                   className="px-6 py-3 bg-muted rounded-xl font-mono text-xl font-bold text-foreground hover:bg-muted/80 transition-colors"
                 >
-                  {showCode ? "1547 2938" : "••••••••"}
+                  {showCode ? accessCode : "••••••"}
                 </button>
               </div>
             </div>

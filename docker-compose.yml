@@ -67,7 +67,7 @@ services:
       - "8080:8080"
     environment:
       DEBUG: true
-      CONFIG_SESSION_PHONE_VERSION: "2.3000.1030277950"
+      CONFIG_SESSION_PHONE_VERSION: "2.3000.1030620896"
       AUTHENTICATION_API_KEY: ${EVOLUTION_KEY}
       SERVER_URL: http://localhost:8080
       DATABASE_ENABLED: true
