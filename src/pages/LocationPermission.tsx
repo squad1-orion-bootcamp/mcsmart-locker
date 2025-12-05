@@ -1,12 +1,13 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { McButton } from "@/components/McButton";
 import { McCard } from "@/components/McCard";
 import { MapPin, Zap } from "lucide-react";
 
 export default function LocationPermission() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const order = location.state?.order;
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleAllow = () => {
     setIsLoading(true);
@@ -75,8 +76,7 @@ export default function LocationPermission() {
   };
 
   const handleDeny = () => {
-    // Continuar sem localização (sem sincronização IA)
-    navigate("/order-status", { state: { order } });
+    navigate("/order-status");
   };
 
   return (
