@@ -17,8 +17,7 @@ export default function LocationPermission() {
 
         async (position) => {
           const { latitude, longitude } = position.coords;
-
- 
+          
           const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_LOCATION_WEBHOOK_URL;
           
           fetch(N8N_WEBHOOK_URL, {
