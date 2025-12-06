@@ -1,11 +1,5 @@
 version: "2"
 tunnels:
-  frontend:
+  app:
     proto: http
-    addr: localhost:8081
-  n8n:
-    proto: http
-    addr: localhost:5678
-#   flowise:
-#     proto: http
-#     addr: localhost:3000
+    addr: localhost:80
