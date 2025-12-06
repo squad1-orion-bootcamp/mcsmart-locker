@@ -1,12 +1,11 @@
 version: "2"
-authtoken: ${NGROK_AUTHTOKEN}
 tunnels:
   frontend:
     proto: http
-    addr: host.docker.internal:8081
+    addr: localhost:8081
   n8n:
     proto: http
-    addr: n8n:5678
-  flowise:
-    proto: http
-    addr: flowise:3000
+    addr: localhost:5678
+#   flowise:
+#     proto: http
+#     addr: localhost:3000
