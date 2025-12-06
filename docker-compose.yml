@@ -168,6 +168,27 @@ services:
     networks:
       - mequizap_net
 
+  #? Ngrok
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: mequizap_ngrok
+    restart: unless-stopped
+    command: start --all --config /etc/ngrok.yml
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    volumes:
+      - ./ngrok.yml:/etc/ngrok.yml
+    ports:
+      - "4040:4040"
+    networks:
+      - mequizap_net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - evolution_api
+      - n8n
+      - flowise
+
 volumes:
   postgres_data:
   mongodb_data:
