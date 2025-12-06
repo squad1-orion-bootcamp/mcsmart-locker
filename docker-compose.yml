@@ -72,7 +72,7 @@ services:
       SERVER_URL: http://localhost:8080
       DATABASE_ENABLED: true
       DATABASE_PROVIDER: postgresql
-      DATABASE_CONNECTION_URI: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}
+      DATABASE_CONNECTION_URI: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@host.docker.internal:5432/${POSTGRES_DB}
       CACHE_REDIS_ENABLED: true
       CACHE_REDIS_URI: redis://:${REDIS_PASSWORD}@redis:6379/0
       CACHE_REDIS_PREFIX_KEY: evolution
@@ -82,6 +82,8 @@ services:
       - evolution_data:/evolution/instances
     networks:
       - mequizap_net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       database:
         condition: service_healthy
@@ -104,7 +106,7 @@ services:
       
       # Configurações do Banco de Dados
       DB_TYPE: postgresdb
-      DB_POSTGRESDB_HOST: database
+      DB_POSTGRESDB_HOST: host.docker.internal
       DB_POSTGRESDB_PORT: 5432
       DB_POSTGRESDB_DATABASE: ${POSTGRES_DB}
       DB_POSTGRESDB_USER: ${POSTGRES_USER}
@@ -127,6 +129,8 @@ services:
       - n8n_data:/home/node/.n8n
     networks:
       - mequizap_net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       database:
         condition: service_healthy
@@ -178,12 +182,7 @@ services:
       NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
     volumes:
       - ./ngrok.yml:/etc/ngrok.yml
-    ports:
-      - "4040:4040"
-    networks:
-      - mequizap_net
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    network_mode: host
     depends_on:
       - evolution_api
       - n8n
