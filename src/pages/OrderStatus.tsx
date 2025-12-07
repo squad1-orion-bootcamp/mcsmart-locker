@@ -29,7 +29,7 @@ export default function OrderStatus() {
     const fetchStatus = async () => {
       try {
         console.log(location.state)
-        const N8N_WEBHOOK_URL = "https://goatlike-rosena-lickerishly.ngrok-free.dev/webhook/nextStep"
+        const N8N_WEBHOOK_URL = `${import.meta.env.VITE_N8N_WEBHOOK_URL}/nextStep`;
         if (!N8N_WEBHOOK_URL) {
           toast({
             title: "Erro de Configuração",

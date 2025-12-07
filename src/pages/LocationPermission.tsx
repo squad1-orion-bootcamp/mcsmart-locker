@@ -20,7 +20,7 @@ export default function LocationPermission() {
         async (position) => {
           const { latitude, longitude } = position.coords;
           
-          const N8N_WEBHOOK_URL = "https://goatlike-rosena-lickerishly.ngrok-free.dev/webhook/GetLocation";
+          const N8N_WEBHOOK_URL = `${import.meta.env.VITE_N8N_WEBHOOK_URL}/GetLocation`;
           
           fetch(N8N_WEBHOOK_URL, {
             method: "POST", 
