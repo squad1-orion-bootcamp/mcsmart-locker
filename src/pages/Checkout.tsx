@@ -50,7 +50,7 @@ export default function Checkout() {
     };
 
     try {
-      const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_CREATE_ORDER_WEBHOOK_URL;
+      const N8N_WEBHOOK_URL = `${import.meta.env.VITE_N8N_WEBHOOK_URL}/create/order`;
       
       if (N8N_WEBHOOK_URL) {
         await fetch(N8N_WEBHOOK_URL, {

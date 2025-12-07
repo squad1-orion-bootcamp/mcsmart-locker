@@ -14,21 +14,23 @@ export default function PickupConfirmed() {
   const [hoveredRating, setHoveredRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleFinish = async () => {
-    if (rating > 0 && order?.id) {
-      setIsSubmitting(true);
+  const handleRating = async (value: number) => {
+    setRating(value);
+    
+    if (order?.id) {
       try {
-        const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_FEEDBACK_WEBHOOK_URL;
+        const N8N_WEBHOOK_URL = `${import.meta.env.VITE_N8N_WEBHOOK_URL}/getAvaliation`;
         
         if (N8N_WEBHOOK_URL) {
-          await fetch(N8N_WEBHOOK_URL, {
+          // Fire and forget - don't await to keep UI responsive
+          fetch(N8N_WEBHOOK_URL, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
               orderId: order.id,
-              rating,
+              rating: value,
             }),
           });
         }
@@ -39,11 +41,11 @@ export default function PickupConfirmed() {
         });
       } catch (error) {
         console.error("Erro ao enviar feedback:", error);
-      } finally {
-        setIsSubmitting(false);
       }
     }
-    
+  };
+
+  const handleFinish = () => {
     navigate("/stores");
   };
 
@@ -93,7 +95,7 @@ export default function PickupConfirmed() {
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
-                  onClick={() => setRating(star)}
+                  onClick={() => handleRating(star)}
                   onMouseEnter={() => setHoveredRating(star)}
                   onMouseLeave={() => setHoveredRating(0)}
                   className="transition-transform hover:scale-110"
@@ -143,8 +145,8 @@ export default function PickupConfirmed() {
 
         {/* Actions */}
         <div className="space-y-3">
-          <McButton onClick={handleFinish} icon={isSubmitting ? Loader2 : Home} disabled={isSubmitting}>
-            {isSubmitting ? "Enviando..." : "Fazer Novo Pedido"}
+          <McButton onClick={handleFinish} icon={Home}>
+            Fazer Novo Pedido
           </McButton>
           
           <button

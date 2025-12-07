@@ -23,8 +23,16 @@ fi
 
 echo "URL do Ngrok encontrada: $NGROK_URL"
 
-# Exportar a variável WEBHOOK_URL para o N8N
-export WEBHOOK_URL="$NGROK_URL/n8n/webhook"
+# Exportar a variável WEBHOOK_URL para o N8N e VITE_N8N_WEBHOOK_URL para o Frontend
+export WEBHOOK_URL="$NGROK_URL/webhook"
+export VITE_N8N_WEBHOOK_URL="$NGROK_URL/webhook"
+
+# Atualizar o arquivo .env com a nova URL
+if grep -q "VITE_N8N_WEBHOOK_URL=" .env; then
+  sed -i "s|VITE_N8N_WEBHOOK_URL=.*|VITE_N8N_WEBHOOK_URL=$VITE_N8N_WEBHOOK_URL|g" .env
+else
+  echo "VITE_N8N_WEBHOOK_URL=$VITE_N8N_WEBHOOK_URL" >> .env
+fi
 
 echo "Iniciando os demais serviços com WEBHOOK_URL=$WEBHOOK_URL"
 

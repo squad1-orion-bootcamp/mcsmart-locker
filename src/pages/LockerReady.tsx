@@ -39,7 +39,7 @@ export default function LockerReady() {
                 Pedido Pronto!
               </h2>
               <p className="text-muted-foreground">
-                Seu pedido está no locker 4 aguardando retirada
+                Seu pedido está no locker {order?.locker} aguardando retirada
               </p>
             </div>
           </div>
@@ -66,8 +66,8 @@ export default function LockerReady() {
                   <Box className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium text-foreground">Locker B-07</p>
-                  <p className="text-muted-foreground">Corredor B, posição 7</p>
+                  <p className="font-medium text-foreground">Locker {order?.locker}</p>
+                  <p className="text-muted-foreground">Corredor {order?.locker}, posição {order?.locker}</p>
                 </div>
               </div>
 
