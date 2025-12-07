@@ -102,7 +102,8 @@ services:
       N8N_HOST: localhost
       N8N_PORT: 5678
       N8N_PROTOCOL: http
-      WEBHOOK_URL: http://localhost:5678
+      N8N_PATH: /n8n/
+      WEBHOOK_URL: ${WEBHOOK_URL}
       
       # Configurações do Banco de Dados
       DB_TYPE: postgresdb
@@ -178,6 +179,8 @@ services:
     container_name: mequizap_ngrok
     restart: unless-stopped
     command: start --all --config /etc/ngrok.yml
+    ports:
+      - "4040:4040"
     environment:
       NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
     volumes:
@@ -187,6 +190,37 @@ services:
       - evolution_api
       - n8n
       - flowise
+      - nginx
+
+  #? Frontend
+  frontend:
+    build: .
+    container_name: mequizap_frontend
+    restart: unless-stopped
+    # ports:
+    #   - "8081:8081" # Exposed via Nginx
+    networks:
+      - mequizap_net
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+  #? Nginx
+  nginx:
+    image: nginx:alpine
+    container_name: mequizap_nginx
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - mequizap_net
+    depends_on:
+      - frontend
+      - n8n
 
 volumes:
   postgres_data:

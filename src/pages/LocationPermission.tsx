@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { McButton } from "@/components/McButton";
 import { McCard } from "@/components/McCard";
@@ -7,6 +7,8 @@ import { MapPin, Zap } from "lucide-react";
 
 export default function LocationPermission() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const order = location.state?.order;
   const [isLoading, setIsLoading] = useState(false);
 
   const handleAllow = () => {
@@ -18,7 +20,7 @@ export default function LocationPermission() {
         async (position) => {
           const { latitude, longitude } = position.coords;
           
-          const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_LOCATION_WEBHOOK_URL;
+          const N8N_WEBHOOK_URL = "https://goatlike-rosena-lickerishly.ngrok-free.dev/webhook/GetLocation";
           
           fetch(N8N_WEBHOOK_URL, {
             method: "POST", 
@@ -45,7 +47,8 @@ export default function LocationPermission() {
           
           navigate("/order-status", { 
             state: { 
-              location: { lat: latitude, lng: longitude } 
+              location: { lat: latitude, lng: longitude },
+              order: order
             } 
           });
         },
@@ -62,7 +65,7 @@ export default function LocationPermission() {
         },
         {
           enableHighAccuracy: false, 
-          timeout: 10000,             
+          timeout: 20000,             
           maximumAge: 60000,         
         }
       );
@@ -76,7 +79,7 @@ export default function LocationPermission() {
   };
 
   const handleDeny = () => {
-    navigate("/order-status");
+    navigate("/order-status", { state: { order } });
   };
 
   return (

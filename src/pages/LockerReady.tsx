@@ -39,7 +39,7 @@ export default function LockerReady() {
                 Pedido Pronto!
               </h2>
               <p className="text-muted-foreground">
-                Seu pedido está no locker aguardando retirada
+                Seu pedido está no locker 4 aguardando retirada
               </p>
             </div>
           </div>

@@ -1,5 +1,5 @@
 version: "2"
 tunnels:
-  app:
+  frontend:
     proto: http
-    addr: localhost:80
+    addr: 8081

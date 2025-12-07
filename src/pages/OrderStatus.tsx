@@ -28,7 +28,8 @@ export default function OrderStatus() {
 
     const fetchStatus = async () => {
       try {
-        const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_ORDER_STATUS_WEBHOOK_URL;
+        console.log(location.state)
+        const N8N_WEBHOOK_URL = "https://goatlike-rosena-lickerishly.ngrok-free.dev/webhook/nextStep"
         if (!N8N_WEBHOOK_URL) {
           toast({
             title: "Erro de Configuração",
@@ -38,14 +39,15 @@ export default function OrderStatus() {
           return;
         }
 
+        console.log("OrderStatus - Order State:", order);
+        
         const response = await fetch(N8N_WEBHOOK_URL, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            orderId: order?.id,
-
+            orderId: order?.id || "DEBUG_NO_ID",
           }),
           signal,
         });
