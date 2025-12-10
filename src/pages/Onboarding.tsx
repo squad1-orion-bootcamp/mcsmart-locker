@@ -76,7 +76,7 @@ export default function Onboarding() {
   };
 
   const handleSkip = () => {
-    navigate("/stores");
+    setShowWhatsAppModal(true);
   };
 
   const step = onboardingSteps[currentStep];

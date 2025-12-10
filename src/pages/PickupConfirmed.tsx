@@ -4,6 +4,8 @@ import { McCard } from "@/components/McCard";
 import { CheckCircle2, Star, Home, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export default function PickupConfirmed() {
   const navigate = useNavigate();
@@ -13,6 +15,8 @@ export default function PickupConfirmed() {
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const [confirmedAt] = useState(new Date());
 
   const handleRating = async (value: number) => {
     setRating(value);
@@ -22,7 +26,6 @@ export default function PickupConfirmed() {
         const N8N_WEBHOOK_URL = `${import.meta.env.VITE_N8N_WEBHOOK_URL}/getAvaliation`;
         
         if (N8N_WEBHOOK_URL) {
-          // Fire and forget - don't await to keep UI responsive
           fetch(N8N_WEBHOOK_URL, {
             method: "POST",
             headers: {
@@ -74,7 +77,9 @@ export default function PickupConfirmed() {
             <p className="text-3xl font-bold text-foreground">#{order?.id || "----"}</p>
             <div className="pt-2 border-t border-border/50 mt-4">
               <p className="text-sm text-muted-foreground">Retirado às</p>
-              <p className="font-semibold text-foreground">18:32</p>
+              <p className="font-semibold text-foreground capitalize">
+                {format(confirmedAt, "HH:mm", { locale: ptBR })}
+              </p>
             </div>
           </div>
         </McCard>
