@@ -22,21 +22,25 @@ export default function OrderStatus() {
   const [currentStep, setCurrentStep] = useState(0);
   const [distance, setDistance] = useState(2.5);
 
-const [pollInterval, setPollInterval] = useState(20000); // Start with 20s
-
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
-    let timeoutId: NodeJS.Timeout;
 
     const fetchStatus = async () => {
       try {
+        console.log(location.state)
         const N8N_WEBHOOK_URL = `${import.meta.env.VITE_N8N_WEBHOOK_URL}/nextStep`;
         if (!N8N_WEBHOOK_URL) {
-          console.error("URL do webhook não configurada");
+          toast({
+            title: "Erro de Configuração",
+            description: "URL do webhook não configurada.",
+            variant: "destructive",
+          });
           return;
         }
 
+        console.log("OrderStatus - Order State:", order);
+        
         const response = await fetch(N8N_WEBHOOK_URL, {
           method: "POST",
           headers: {
@@ -49,11 +53,11 @@ const [pollInterval, setPollInterval] = useState(20000); // Start with 20s
         });
 
         if (response.ok) {
-          // Success: Reset poll interval to 20s
-          setPollInterval(20000);
-          
           const text = await response.text();
-          if (!text) return;
+          
+          if (!text) {
+            return;
+          }
 
           let newStep = currentStep;
           let newDistance = distance;
@@ -89,21 +93,19 @@ const [pollInterval, setPollInterval] = useState(20000); // Start with 20s
               return; 
             }
           }
-        } else {
-            // Server error (e.g. 403, 429, 500): Increase backoff
-            console.warn(`Fetch error: ${response.status}. Increasing interval.`);
-            setPollInterval(prev => Math.min(prev * 2, 60000)); // Max 60s
         }
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
           return; 
         }
-        // Network error: Increase backoff
-        console.warn("Network error. Increasing interval.");
-        setPollInterval(prev => Math.min(prev * 2, 60000));
+        toast({
+          title: "Erro de Conexão",
+          description: "Não foi possível buscar o status do pedido.",
+          variant: "destructive",
+        });
       } finally {
         if (!signal.aborted) {
-           timeoutId = setTimeout(fetchStatus, pollInterval);
+          setTimeout(fetchStatus, 10000);
         }
       }
     };
@@ -112,9 +114,8 @@ const [pollInterval, setPollInterval] = useState(20000); // Start with 20s
 
     return () => {
       controller.abort();
-      clearTimeout(timeoutId);
     };
-  }, [navigate, order?.id, currentStep, pollInterval]);
+  }, [navigate, order?.id, currentStep]);
 
   const step = statusSteps[currentStep];
 
