@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { McHeader } from "@/components/McHeader";
 import { McButton } from "@/components/McButton";
 import { McCard } from "@/components/McCard";
-import { MapPin, Clock, Box } from "lucide-react";
-import QRCode from "react-qr-code";
+import { MapPin, Clock, Box, Loader2 } from "lucide-react";
 
 export default function LockerReady() {
   const navigate = useNavigate();
@@ -14,6 +13,47 @@ export default function LockerReady() {
   const [accessCode] = useState(
     () => String(Math.floor(Math.random() * 1_000_000)).padStart(6, "0")
   );
+  
+  const [qrCodeBase64, setQrCodeBase64] = useState<string | null>(null);
+  const [isLoadingQr, setIsLoadingQr] = useState(true);
+
+  useEffect(() => {
+    const fetchQRCode = async () => {
+      if (!order?.id) return;
+
+      try {
+        const webhookUrl = `${import.meta.env.VITE_N8N_WEBHOOK_URL}/createQRCode`;
+        
+        const response = await fetch(webhookUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ orderId: order.id }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // Expecting { qrcode: "base64string..." } or just the string if the webhook handles it that way
+          // Based on common n8n patterns, let's assume it returns a JSON with a field or the string directly.
+          // Let's handle both cases if possible or assume a standard field 'qrcode'.
+          // Implementation plan said: Output: { qrcode: "data:image/png;base64,..." }
+          
+          if (data.qrcode) {
+             setQrCodeBase64(data.qrcode);
+          } else if (typeof data === 'string' && data.startsWith('data:image')) {
+             setQrCodeBase64(data);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch QR Code:", error);
+      } finally {
+        setIsLoadingQr(false);
+      }
+    };
+
+    fetchQRCode();
+  }, [order?.id]);
 
   const handleOpenLocker = () => {
     // Simular abertura do locker
@@ -97,15 +137,23 @@ export default function LockerReady() {
             </div>
 
             <div className="flex justify-center">
-              <div className="p-6 bg-white rounded-2xl shadow-lg">
-                <div className="bg-white rounded-lg flex items-center justify-center">
-                  <QRCode
-                    value={accessCode}
-                    size={192}
-                    bgColor="#FFFFFF"
-                    fgColor="#000000"
+              <div className="p-6 bg-white rounded-2xl shadow-lg min-h-[240px] w-[240px] flex items-center justify-center">
+                {isLoadingQr ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <span className="text-sm text-muted-foreground">Gerando QR Code...</span>
+                  </div>
+                ) : qrCodeBase64 ? (
+                  <img 
+                    src={qrCodeBase64} 
+                    alt="QR Code de Retirada" 
+                    className="w-full h-full object-contain"
                   />
-                </div>
+                ) : (
+                  <div className="text-red-500 text-sm">
+                    Erro ao carregar QR Code
+                  </div>
+                )}
               </div>
             </div>
 
