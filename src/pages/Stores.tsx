@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { McHeader } from "@/components/McHeader";
 import { McCard } from "@/components/McCard";
@@ -17,59 +17,33 @@ interface Store {
 export default function Stores() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [stores, setStores] = useState<Store[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchStores = async () => {
-      try {
-        const webhookUrl = `${import.meta.env.VITE_N8N_WEBHOOK_URL}/getStores`;
-        // If the URL is just the base, we append /getStores
-        // If usage elsewhere suggests VITE_N8N_WEBHOOK_URL is the base, this is correct.
-        
-        const response = await fetch(webhookUrl);
-        if (!response.ok) throw new Error("Falha ao buscar lojas");
-        
-        const data = await response.json();
-        
-        // Ensure data is an array
-        const storesData = Array.isArray(data) ? data : (data.stores || []);
-        
-        setStores(storesData);
-      } catch (error) {
-        console.error("Erro ao buscar lojas:", error);
-        toast({ 
-          title: "Erro ao carregar lojas", 
-          description: "Usando dados de demonstração.",
-          variant: "destructive" 
-        });
-        
-        // Fallback to demo data if fetch fails (useful for dev/demo without backend)
-        setStores([
-          {
-            id: 1,
-            name: "McDonald's Shopping Center",
-            address: "Av. Principal, 1000 - Centro",
-            distance: "1.2 km",
-            lockersAvailable: 8,
-            estimatedTime: "10-15 min"
-          },
-          {
-            id: 2,
-            name: "McDonald's Beira Mar",
-            address: "Av. Beira Mar, 2500",
-            distance: "2.5 km",
-            lockersAvailable: 5,
-            estimatedTime: "15-20 min"
-          }
-        ]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchStores();
-  }, [toast]);
+  const [stores] = useState<Store[]>([
+    {
+      id: 1,
+      name: "McDonald's Shopping Center",
+      address: "Av. Principal, 1000 - Centro",
+      distance: "1.2 km",
+      lockersAvailable: 8,
+      estimatedTime: "10-15 min"
+    },
+    {
+      id: 2,
+      name: "McDonald's Beira Mar",
+      address: "Av. Beira Mar, 2500",
+      distance: "2.5 km",
+      lockersAvailable: 5,
+      estimatedTime: "15-20 min"
+    },
+    {
+      id: 3,
+      name: "McDonald's Centro Historico",
+      address: "Rua das Flores, 42",
+      distance: "3.8 km",
+      lockersAvailable: 2,
+      estimatedTime: "20-25 min"
+    }
+  ]);
+  const [isLoading] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">

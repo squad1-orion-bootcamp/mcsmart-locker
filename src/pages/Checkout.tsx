@@ -42,8 +42,8 @@ export default function Checkout() {
         quantity: item.quantity,
         price: item.price,
         total: item.price * item.quantity,
-        rating: null,
       })),
+      rating: null,
       total,
       paymentMethod,
       pickupMethod: selectedMethod
