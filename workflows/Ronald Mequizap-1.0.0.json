@@ -1,0 +1,1229 @@
+{
+  "name": "Ronald Mequizap",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mequizap",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1872,
+        256
+      ],
+      "id": "b338d764-4615-4435-ac63-e1c86e653d38",
+      "name": "Webhook",
+      "webhookId": "8eca1f73-cf6c-456c-afb5-7babfc94921f"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-robotics-er-1.5-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        320
+      ],
+      "id": "97941875-e008-4c87-acdc-e8c0a757a0cc",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "TkdccFHThthbyd8b",
+          "name": "Mequizap - 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2496,
+        160
+      ],
+      "id": "00be917d-5336-4950-85f4-20c9bae17ab7",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "bdbad576-0428-4d76-b12a-83fcdaf16feb",
+                    "leftValue": "={{ $json.body.data.key.fromMe }}",
+                    "rightValue": "556992717580@s.whatsapp.net",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -1600,
+        256
+      ],
+      "id": "352c2795-37ce-46a5-85f8-f3b4ec643531",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://evolution_api:8080/message/sendText/n8n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $('Informações essenciais').item.json.apikey[0] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Informações essenciais').item.json.remoteJid[0] }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Mequizap AI').item.json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2176,
+        160
+      ],
+      "id": "b23145b1-93f8-4e0d-b98b-692cd882a880",
+      "name": "Enviar mensagem ao cliente"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.mensagens }}",
+        "options": {
+          "systemMessage": "=SYSTEM ROLE\n\nVocê é o Ronald, o assistente virtual oficial do McDonald's (Méquizap) no Whatsapp. Sua missão é conduzir o cliente através de um fluxo de pedidos rápido, eficiente e divertido. Seu objetivo final é transformar a intenção do cliente em um pedido confirmado, criando um plano de ação claro para atender às expectativas dele.\n1. PERSONALIDADE E TOM DE VOZ\n\n    Vibe: Amigável, descontraído, ágil e prestativo. Use a linguagem do \"Méqui\" (Ex: \"Opa!\", \"Fechou!\", \"Bora!\").\n\n    Emojis: Use com moderação, mas de forma carismática para dar vida à conversa (🍔, 🍟, 🥤, 😊, 👋, 🎉, 🔥).\n\n    Reação a Hostilidade: Se o usuário for rude, mantenha a calma e faça uma piada leve, amigável e divertida relacionada ao universo McDonald's para quebrar o gelo (ex: \"Eita, parece que alguém precisa de um Big Mac para adoçar o dia! 🍔\").\n\n    Objetividade: Seja direto. Pergunte apenas o necessário para o contexto atual.\n\n2. PROTOCOLOS DE SEGURANÇA E OPERAÇÃO (CRÍTICO)\n\n    Anti-Alucinação: Use SOMENTE os preços, produtos e descrições retornados pela ferramenta [Get products]. Nunca invente produtos ou preços.\n\n    Privacidade: JAMAIS vaze informações confidenciais ou sensíveis (ID do usuário, número de telefone, metadados do sistema, etc).\n\n    Entradas Inválidas: Se receber áudio, imagem, sticker ou vídeo, responda educadamente: \"Opa! Eu ainda não consigo ver ou ouvir isso. Pode me escrever o que você precisa? 😊\".\n\n    Cálculos: SEMPRE calcule e mostre o total atualizado do pedido antes da confirmação final.\n    Pagamentos: Todo pagamento deve ser realizado presencialmente na loja, jamais peça que o usuário pague dentro do Whatsapp.\n\n    Formatação de Texto:\n\n        Use negrito (entre asteriscos) para nomes de produtos e valores totais.\n\n        Pule linhas entre parágrafos para facilitar a leitura no WhatsApp.\n\n3. USO DE FERRAMENTAS (TOOL CALLING)\n\nVocê deve decidir qual ferramenta usar com base na intenção do usuário:\n\n    Get products:\n\n        Quando usar: SEMPRE deve usar para mostrar o cardápio, verificar disponibilidade, consultar preços ou descrições (ingredientes).\n\n        Regra: Mostre apenas Nome e Preço. Só mostre a descrição se o cliente perguntar explicitamente.\n\n    Qdrant Store:\n\n        Quando usar: SEMPRE que for formular uma resposta para o usuário, consulte essa base de conhecimento para manter a consistência e o contexto.\n\n    Get lojas:\n\n        Quando usar: Quando o cliente escolher retirar em \"Locker\", \"Loja Física\" ou \"Drive-Thru\".\n\n        Ação: Identifique o endereço e a disponibilidade de lockers e apresente as opções para o cliente escolher.\n\n    Captura status do pedido:\n\n        Quando usar: Quando o cliente perguntar \"onde está meu pedido?\" ou \"status do pedido\" ou \"status\" ou \"meu pedido\".\n\n        Ação: Busque pelo ID do pedido na memória ou no banco PostgreSQL. Se não tiver o ID, pergunte ao usuário.\n\n    Create order:\n\n        Quando usar: APENAS após o usuário confirmar todos os itens, a forma de entrega e o pagamento.\n\n        Ação: Gera o pedido no sistema e retorna o ID do pedido.\n\n4. ROTEIROS E FLUXOS DE CONVERSA\n4.1. Saudação Inicial\n\n\"Opa! Eu sou o Ronald, seu assistente do Méqui 🍔 Posso te ajudar a fazer um pedido rapidinho. O que manda hoje?\" (Sugira opções: Ver cardápio, Repetir último pedido, Ofertas do dia, Status do pedido)\n4.2. Fluxo: Ver Cardápio / Fazer Pedido\n\n    Acione [Get products].\n\n    Exiba as categorias/produtos:\n\n        \"Aqui está o cardápio: [Emoji] Nome do Item - R$ Preço\"\n\n    Pergunte: \"Me diz aí: qual você vai querer? 😋\"\n\n4.3. Fluxo: Adicionais (Upsell)\n\nApós a escolha do item principal: \"Boa escolha! 😍 Quer adicionar uma bebida geladinha ou uma sobremesa para deixar o pedido 100% Méqui?\"\n4.4. Fluxo: Definir Entrega\n\n\"Fechou! Agora me diz: como você vai receber seu pedido?\"\n\n    📍 Loja mais próxima\n\n    🔒 Locker McSmart\n\n    🏍️ Delivery (Se escolher Loja ou Locker, acione a ferramenta Get lojas)\n\n4.5. Fluxo: Revisão e Confirmação\n\nAntes de finalizar, mostre o resumo: \"Show! Seu pedido ficou assim: • {item} • {adicionais} Local: {loja/locker/endereço} Total: R$ {valor_calculado}\n\nPosso confirmar? 😄\"\n4.6. Fluxo: Finalização (Create order)\n\nApós o \"Sim\" do usuário:\n\n    Execute a ferramenta Create order.\n\n    Responda: \"Tudo certo! 🧾✨ Seu pedido de número {ID_DO_PEDIDO} está sendo preparado. Te aviso aqui quando estiver pronto! 👀🍔\"\n\n4.7. Fluxos Alternativos\n\n    Repetir Pedido: Busque o histórico. \"Seu último pedido foi: [Lista]. Deseja repetir? 😄\"\n\n    Ofertas do Dia: \"Hoje tem promo boa 😍🔥 Big Mac + Fritas por R$ 22,90. Vamos aproveitar?\"\n\n5. FORMATO DE DADOS (JSON)\n\nQuando acionar a ferramenta Create order, utilize estritamente este esquema JSON:\n\n{\n  \"whatsapp_number\": \"{{ $('Informações essenciais').item.json.remoteJid[0] }}\",\n  \"products\": [\n    {\n      \"name\": \"[Nome exato do produto]\",\n      \"price\": [Preço numérico, ex: 36.90]\n    },\n    {\n      \"name\": \"[Nome exato do produto]\",\n      \"price\": [Preço numérico]\n    }\n  ],\n  \"delivery_method\": \"[Delivery / Locker / Loja]\",\n  \"forma_pagamento\": \"[Forma escolhida]\",\n  \"total\": [Valor total numérico somado]\n}"
+        }
+      },
+      "id": "249fe282-f7b4-4c0f-a2ef-a88f03e579a3",
+      "name": "Mequizap AI",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        1600,
+        160
+      ],
+      "typeVersion": 1.9
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1lrP3hEQ-mSGzKG-Vnf4rfylNFzE9Q7rPMV5CxYbDYd8",
+          "mode": "list",
+          "cachedResultName": "Mequizap - produtos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lrP3hEQ-mSGzKG-Vnf4rfylNFzE9Q7rPMV5CxYbDYd8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lrP3hEQ-mSGzKG-Vnf4rfylNFzE9Q7rPMV5CxYbDYd8/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1584,
+        576
+      ],
+      "id": "c97af255-aaf5-4a00-8ca4-e08534889b21",
+      "name": "Get products",
+      "credentials": {
+        "googleApi": {
+          "id": "DprREMEh6cXBfzfT",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use sempre essa ferramenta para interagir com o usuário",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "mequizap-roteiro",
+          "mode": "list",
+          "cachedResultName": "mequizap-roteiro"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        1392,
+        336
+      ],
+      "id": "fa76fd3d-9d22-4149-9134-aead0d77d53f",
+      "name": "Qdrant Vector Store",
+      "credentials": {
+        "qdrantApi": {
+          "id": "thATrCKmxQ1ad0Cn",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-exp-03-07"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        480
+      ],
+      "id": "dd6cf09b-bcb8-4de3-a3fd-600a2490b4b5",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "p2isFKC59kO18xdq",
+          "name": "Mequizap"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1AcQI942kRdLQvIbBYPrmy06UNuWc877WXyEvWF-ZOfI",
+          "mode": "list",
+          "cachedResultName": "Mequizap - usuarios",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AcQI942kRdLQvIbBYPrmy06UNuWc877WXyEvWF-ZOfI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AcQI942kRdLQvIbBYPrmy06UNuWc877WXyEvWF-ZOfI/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "numero",
+              "lookupValue": "={{ $json.remoteJid[0] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1024,
+        256
+      ],
+      "id": "410cf8a0-9b2e-4737-a6ec-7d8fd682b1b4",
+      "name": "Confere se o usuário está cadastrado",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "DprREMEh6cXBfzfT",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1AcQI942kRdLQvIbBYPrmy06UNuWc877WXyEvWF-ZOfI",
+          "mode": "list",
+          "cachedResultName": "Mequizap - usuarios",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AcQI942kRdLQvIbBYPrmy06UNuWc877WXyEvWF-ZOfI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AcQI942kRdLQvIbBYPrmy06UNuWc877WXyEvWF-ZOfI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nome": "={{ $('Informações essenciais').item.json.pushName.toString() }}",
+            "numero": "={{ $('Informações essenciais').item.json.remoteJid.toString() }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "numero",
+              "displayName": "numero",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -544,
+        96
+      ],
+      "id": "012afdda-9cf8-4ca2-b22d-21b81047f414",
+      "name": "Cadastrar usuário",
+      "credentials": {
+        "googleApi": {
+          "id": "DprREMEh6cXBfzfT",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Persistindo usuário\n",
+        "height": 496,
+        "width": 848
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1168,
+        16
+      ],
+      "id": "9e0d7e8d-25ba-498f-89d1-f44b36bf28fc",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        1952,
+        576
+      ],
+      "id": "a615d452-0531-4dc2-beaa-ee1adc1aa8fa",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {
+        "description": "Use essa ferramenta para criar o pedido do cliente quando ele confirmar o pedido.",
+        "workflowId": {
+          "__rl": true,
+          "value": "4iDKNnVxBTwRb4Wd",
+          "mode": "list",
+          "cachedResultUrl": "/n8n/workflow/4iDKNnVxBTwRb4Wd",
+          "cachedResultName": "Workflow/Webhook - Create order"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1840,
+        576
+      ],
+      "id": "3e35c2f2-4252-41ba-a4e0-d681e9eaf5e6",
+      "name": "Create order"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Informações essenciais').item.json.remoteJid[0] }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1232,
+        320
+      ],
+      "id": "ed270db3-66ae-4d67-9aa7-492b004fbf59",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $('Informações essenciais').item.json.remoteJid[0] }} temp",
+        "messageData": "={{ $('Informações essenciais').item.json.conversation[0] }}",
+        "tail": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        240
+      ],
+      "id": "23715699-3d38-4173-9c21-d9659778341d",
+      "name": "Lista temporária",
+      "credentials": {
+        "redis": {
+          "id": "tHcKHQl65QgOjNXd",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 6
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -32,
+        240
+      ],
+      "id": "8dd366da-3865-417a-b538-7809ad4e9aef",
+      "name": "Wait",
+      "webhookId": "2cb031ba-40f5-48d0-a506-1f7cfe06679b"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "mensagens",
+        "key": "={{ $('Informações essenciais').item.json.remoteJid[0] }} temp",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        128,
+        240
+      ],
+      "id": "714c7838-68fd-4bdc-8c34-9f2c00b6a779",
+      "name": "Buscar lista",
+      "credentials": {
+        "redis": {
+          "id": "tHcKHQl65QgOjNXd",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "09ace11e-20c3-4a9a-8054-187195258e8e",
+              "leftValue": "={{ ($json.mensagens).last() }}",
+              "rightValue": "={{ $('Informações essenciais').item.json.conversation[0] }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        336,
+        240
+      ],
+      "id": "8d6e800c-65b0-4776-a837-cd394a1abdfd",
+      "name": "Se é a ultima mensagem"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $('Informações essenciais').item.json.remoteJid[0] }} temp"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        496,
+        112
+      ],
+      "id": "ced971c1-bee0-40ef-980e-1b8a4229a2a4",
+      "name": "Deletar lista",
+      "credentials": {
+        "redis": {
+          "id": "tHcKHQl65QgOjNXd",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2dab9714-97ed-4902-81fb-71b2e640f732",
+              "name": "mensagens",
+              "value": "={{ $json.mensagens.join(\" \") }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        704,
+        112
+      ],
+      "id": "81d683ea-c66f-44a0-959a-1d0a17be7531",
+      "name": "Mensagem final"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Sempre utilize essa ferramenta para acessar as informações referentes aos Lockers e lojas disponíveis",
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1mWu7PLtlvpSaYyqAgivBiKWwHcG6bLyZyv4vgNDgv3w",
+          "mode": "list",
+          "cachedResultName": "Mequizap - lojas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mWu7PLtlvpSaYyqAgivBiKWwHcG6bLyZyv4vgNDgv3w/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mWu7PLtlvpSaYyqAgivBiKWwHcG6bLyZyv4vgNDgv3w/edit#gid=0"
+        },
+        "combineFilters": "OR",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1712,
+        576
+      ],
+      "id": "962672a1-4831-4f5e-81b6-f31e7457fac3",
+      "name": "Get stores",
+      "credentials": {
+        "googleApi": {
+          "id": "DprREMEh6cXBfzfT",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Buffer de mensagem ( 10s )",
+        "height": 432,
+        "width": 1152,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        32
+      ],
+      "id": "ad59a99c-a2ca-4c07-9a92-b757833f0c2c",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# Ronald Mequizap\n",
+        "height": 720,
+        "width": 1872
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        912,
+        64
+      ],
+      "id": "c9c91c65-ea64-441d-b87f-09039d1d13c6",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "pedidos",
+          "mode": "list",
+          "cachedResultName": "pedidos"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values0_Value', ``, 'string') }}"
+            },
+            {
+              "column": "whatsapp",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values1_Value', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        2208,
+        576
+      ],
+      "id": "cc716d3a-435c-4f18-8502-7fbc7222cd75",
+      "name": "get pedido",
+      "credentials": {
+        "postgres": {
+          "id": "fJ9Us6La5H95leLB",
+          "name": "Postgresql - Docker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Utilize essa ferramenta para identificar para qual pedido tem um Qr code gerado.",
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "qr_codes",
+          "mode": "list",
+          "cachedResultName": "qr_codes"
+        },
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
+        "where": {
+          "values": [
+            {
+              "column": "id_pedido",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values0_Value', `Utilize o id do pedido gerado do cliente pela conversa, deve ser um número.`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        2320,
+        576
+      ],
+      "id": "53281451-6e85-4454-99ef-9c5cfffea542",
+      "name": "get QrCode",
+      "credentials": {
+        "postgres": {
+          "id": "fJ9Us6La5H95leLB",
+          "name": "Postgresql - Docker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "body.data.pushName"
+            },
+            {
+              "fieldToAggregate": "body.data.key.remoteJid"
+            },
+            {
+              "fieldToAggregate": "body.data.message.conversation"
+            },
+            {
+              "fieldToAggregate": "body.sender"
+            },
+            {
+              "fieldToAggregate": "body.date_time"
+            },
+            {
+              "fieldToAggregate": "body.apikey"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -1408,
+        256
+      ],
+      "id": "20b5f3be-33a8-4129-986f-aeac423ddfa0",
+      "name": "Informações essenciais"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "039242d4-d912-4013-8762-5403ea256dfc",
+              "leftValue": "={{ $json.isEmpty() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -800,
+        256
+      ],
+      "id": "a50da88f-4ead-42ba-9df9-d1a34bb64f6a",
+      "name": "Se o usuário não existir"
+    },
+    {
+      "parameters": {
+        "description": "Utilize essa ferramenta SEMPRE para ver o status do pedido.",
+        "workflowId": {
+          "__rl": true,
+          "value": "2mou4Z44jYVQZMJ5",
+          "mode": "list",
+          "cachedResultUrl": "/n8n/workflow/2mou4Z44jYVQZMJ5",
+          "cachedResultName": "Webhook/Workflow - Order Status"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "idPedido": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('idPedido', ``, 'string') }}",
+            "whatsapp": "={{ $('Switch').item.json.body.data.key.remoteJid }}"
+          },
+          "matchingColumns": [
+            "idPedido"
+          ],
+          "schema": [
+            {
+              "id": "whatsapp",
+              "displayName": "whatsapp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "idPedido",
+              "displayName": "idPedido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        2080,
+        576
+      ],
+      "id": "17c5e66a-335c-4e89-b44a-1712ad0cd837",
+      "name": "status do pedido"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json",
+            "user-agent": "axios/1.12.2",
+            "content-length": "1273",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "host": "n8n:5678",
+            "connection": "keep-alive"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "event": "messages.upsert",
+            "instance": "n8n",
+            "data": {
+              "key": {
+                "remoteJid": "556999831752@s.whatsapp.net",
+                "remoteJidAlt": "119284143546561@lid",
+                "fromMe": false,
+                "id": "3A282B4697778B654731",
+                "participant": "",
+                "addressingMode": "pn"
+              },
+              "pushName": "Marcella",
+              "status": "DELIVERY_ACK",
+              "message": {
+                "conversation": "sim",
+                "messageContextInfo": {
+                  "deviceListMetadata": {
+                    "senderKeyIndexes": [],
+                    "recipientKeyIndexes": [],
+                    "senderTimestamp": {
+                      "low": 1765496846,
+                      "high": 0,
+                      "unsigned": true
+                    },
+                    "recipientKeyHash": {
+                      "0": 222,
+                      "1": 148,
+                      "2": 201,
+                      "3": 34,
+                      "4": 204,
+                      "5": 10,
+                      "6": 50,
+                      "7": 121,
+                      "8": 185,
+                      "9": 94
+                    },
+                    "recipientTimestamp": {
+                      "low": 1764854707,
+                      "high": 0,
+                      "unsigned": true
+                    }
+                  },
+                  "deviceListMetadataVersion": 2,
+                  "messageSecret": {
+                    "0": 78,
+                    "1": 134,
+                    "2": 109,
+                    "3": 18,
+                    "4": 36,
+                    "5": 105,
+                    "6": 219,
+                    "7": 191,
+                    "8": 253,
+                    "9": 149,
+                    "10": 131,
+                    "11": 194,
+                    "12": 68,
+                    "13": 125,
+                    "14": 144,
+                    "15": 140,
+                    "16": 173,
+                    "17": 237,
+                    "18": 249,
+                    "19": 86,
+                    "20": 23,
+                    "21": 202,
+                    "22": 98,
+                    "23": 145,
+                    "24": 121,
+                    "25": 244,
+                    "26": 99,
+                    "27": 164,
+                    "28": 198,
+                    "29": 176,
+                    "30": 161,
+                    "31": 159
+                  }
+                }
+              },
+              "messageType": "conversation",
+              "messageTimestamp": 1765510670,
+              "instanceId": "f3999925-0702-4719-bade-8871b76187ad",
+              "source": "ios"
+            },
+            "destination": "http://n8n:5678/webhook/mequizap",
+            "date_time": "2025-12-12T00:37:50.643Z",
+            "sender": "556992717580@s.whatsapp.net",
+            "server_url": "http://localhost:8080",
+            "apikey": "AC8EDB2101E4-4ADB-9C58-EE5787F14A75"
+          },
+          "webhookUrl": "https://goatlike-rosena-lickerishly.ngrok-free.dev/webhook/webhook/mequizap",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Mequizap AI",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Informações essenciais",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar mensagem ao cliente": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mequizap AI": {
+      "main": [
+        [
+          {
+            "node": "Enviar mensagem ao cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get products": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mequizap AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mequizap AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confere se o usuário está cadastrado": {
+      "main": [
+        [
+          {
+            "node": "Se o usuário não existir",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cadastrar usuário": {
+      "main": [
+        [
+          {
+            "node": "Lista temporária",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mequizap AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create order": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mequizap AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Mequizap AI",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lista temporária": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Buscar lista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar lista": {
+      "main": [
+        [
+          {
+            "node": "Se é a ultima mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Se é a ultima mensagem": {
+      "main": [
+        [
+          {
+            "node": "Deletar lista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deletar lista": {
+      "main": [
+        [
+          {
+            "node": "Mensagem final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem final": {
+      "main": [
+        [
+          {
+            "node": "Mequizap AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get stores": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mequizap AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get pedido": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mequizap AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get QrCode": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mequizap AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Informações essenciais": {
+      "main": [
+        [
+          {
+            "node": "Confere se o usuário está cadastrado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Se o usuário não existir": {
+      "main": [
+        [
+          {
+            "node": "Cadastrar usuário",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Lista temporária",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "status do pedido": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mequizap AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f9129cf4-5ee8-4dcd-b4a2-9fe9e89f7b85",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "80664dbc990da4ced652c71ae04d16d3881c368fc794bc8eb2db300cc33d46e0"
+  },
+  "id": "FWoIwYFpCbUk27Kt",
+  "tags": []
+}

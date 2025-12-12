@@ -1,0 +1,434 @@
+{
+  "name": "Workflow - Create QRcode",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n\"whatsapp_number\": \"[numero do cliente]\",\n  \"apikey\": \"\",\n\"idPedido\": 2521,\n  \"codigoLocker\":123231\n}\n"
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -1184,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS qr_codes (\n    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,\n    token VARCHAR(6) DEFAULT lpad(floor(random() * 1000000)::text, 6, '0'),\n    locker INT DEFAULT floor(random() * 10 + 1)::int,\n    id_pedido INT REFERENCES pedidos(id),\n    usado BOOLEAN DEFAULT FALSE\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1152,
+        -64
+      ],
+      "id": "f89a67bd-dcc9-4c6a-8bd1-26ae6d5ebbb6",
+      "name": "Create Table QR Code",
+      "credentials": {
+        "postgres": {
+          "id": "fJ9Us6La5H95leLB",
+          "name": "Postgresql - Docker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        288
+      ],
+      "id": "b1261ceb-8cd8-4101-889a-ca2bc2aa8366",
+      "name": "Image -> BASE64"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://evolution_api:8080/message/sendMedia/n8n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $('When Executed by Another Workflow').item.json.apikey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $('When Executed by Another Workflow').item.json.whatsapp_number }}\",\n  \"mediatype\": \"image\",\n  \"mimetype\": \"image/png\",\n  \"caption\": \"Código: {{ $('Gera imagem do QR Code').item.json.token }}\",\n  \"media\": \"{{ $json.data }}\",\n  \"fileName\": \"data.png\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -320,
+        288
+      ],
+      "id": "8300be32-d584-4c8a-a902-a2fb000fb9c6",
+      "name": "Enviar QR Code ao cliente"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "drop table qr_codes",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1136,
+        -240
+      ],
+      "id": "617f0c20-0f9e-407e-b5c3-57c0d590937d",
+      "name": "drop table qr codes",
+      "credentials": {
+        "postgres": {
+          "id": "fJ9Us6La5H95leLB",
+          "name": "Postgresql - Docker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.qrserver.com/v1/create-qr-code/?size=300px&data={{ $json.token }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -736,
+        288
+      ],
+      "id": "d8dab397-1943-4e05-8511-ae97b270b71c",
+      "name": "Gera imagem do QR Code"
+    },
+    {
+      "parameters": {
+        "content": "##  Gera QR Code vinculado ao pedido",
+        "height": 400,
+        "width": 1728,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1264,
+        160
+      ],
+      "id": "81e43882-8ad9-4924-b6aa-16eeb8e4e1c8",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Ferramentas do banco de dados ",
+        "height": 432,
+        "width": 800
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1264,
+        -320
+      ],
+      "id": "5a5b4de6-bb24-45a2-8eb3-acb761de2ed9",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://evolution_api:8080/message/sendText/n8n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $('When Executed by Another Workflow').item.json.apikey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('When Executed by Another Workflow').item.json.whatsapp_number }}"
+            },
+            {
+              "name": "text",
+              "value": "=Aqui está o seu QR Code, utilize ele no Locker {{ $('Gera imagem do QR Code').item.json.locker }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -80,
+        288
+      ],
+      "id": "be6e3596-affc-4eed-9229-94572f4aaac9",
+      "name": "Direcionamento ao cliente"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "qr_codes",
+          "mode": "list",
+          "cachedResultName": "qr_codes"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id_pedido": "={{ $json.idPedido }}",
+            "usado": false
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "token",
+              "displayName": "token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "locker",
+              "displayName": "locker",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "id_pedido",
+              "displayName": "id_pedido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "usado",
+              "displayName": "usado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -960,
+        288
+      ],
+      "id": "faeb2342-2c3c-43e1-ac0a-c43f0c8ab2e4",
+      "name": "Inserindo o QR Code no banco",
+      "credentials": {
+        "postgres": {
+          "id": "fJ9Us6La5H95leLB",
+          "name": "Postgresql - Docker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "qr_codes",
+          "mode": "list",
+          "cachedResultName": "qr_codes"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -848,
+        -224
+      ],
+      "id": "83d5474f-4f2b-43de-9a36-5761c8c203f4",
+      "name": "Get Qr codes",
+      "credentials": {
+        "postgres": {
+          "id": "fJ9Us6La5H95leLB",
+          "name": "Postgresql - Docker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7c0ce18d-8756-4c7d-84ba-5ca40bb077b2",
+              "name": "message",
+              "value": "={{ $json.message.conversation }}",
+              "type": "string"
+            },
+            {
+              "id": "3c15960c-ff17-4934-bba8-c0ac5b40e0ea",
+              "name": "whatsapp_number",
+              "value": "={{ $json.key.remoteJid }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        128,
+        288
+      ],
+      "id": "91a3327b-7910-4d93-bcde-d03ffec1f496",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "whatsapp_number": "556999831752@s.whatsapp.net",
+          "apikey": "AC8EDB2101E4-4ADB-9C58-EE5787F14A75",
+          "idPedido": 15,
+          "codigoLocker": 7
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Inserindo o QR Code no banco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image -> BASE64": {
+      "main": [
+        [
+          {
+            "node": "Enviar QR Code ao cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar QR Code ao cliente": {
+      "main": [
+        [
+          {
+            "node": "Direcionamento ao cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "drop table qr codes": {
+      "main": [
+        []
+      ]
+    },
+    "Gera imagem do QR Code": {
+      "main": [
+        [
+          {
+            "node": "Image -> BASE64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Direcionamento ao cliente": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inserindo o QR Code no banco": {
+      "main": [
+        [
+          {
+            "node": "Gera imagem do QR Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3e6e1e22-c053-4006-b3d9-49b42304cd04",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "80664dbc990da4ced652c71ae04d16d3881c368fc794bc8eb2db300cc33d46e0"
+  },
+  "id": "SC3yLbY3Khe8V8v8",
+  "tags": []
+}

@@ -1,0 +1,814 @@
+{
+  "name": "Webhook/Workflow - Order Status",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"whatsapp\": \"999999999@whatsapp\",\n  \"idPedido\": \"\"\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1216,
+        -416
+      ],
+      "id": "b52d914d-fcd8-4f33-b2c2-5e966a60b1fa",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "em andamento",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "d1a9172d-39e3-4f2d-8296-64b7676c27e3"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "em andamento"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "838e6036-a98d-4c2f-93e7-850cbdacac92",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "pronto",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "pronto"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "26f277a7-a3c5-4ce7-b28d-479b250bb399",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "locker",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "locker"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        576,
+        -384
+      ],
+      "id": "97262389-220d-411d-a3c5-b1976f586026",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "SC3yLbY3Khe8V8v8",
+          "mode": "list",
+          "cachedResultUrl": "/n8n/workflow/SC3yLbY3Khe8V8v8",
+          "cachedResultName": "Create QRcode"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "codigoLocker": "={{ Math.floor((Math.random()*9) +1) }}",
+            "whatsapp_number": "={{ $('Busca pedido pelo ID').item.json.whatsapp }}",
+            "idPedido": "={{ $('Busca pedido pelo ID').item.json.id }}",
+            "apikey": "AC8EDB2101E4-4ADB-9C58-EE5787F14A75"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "whatsapp_number",
+              "displayName": "whatsapp_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "apikey",
+              "displayName": "apikey",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "idPedido",
+              "displayName": "idPedido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "codigoLocker",
+              "displayName": "codigoLocker",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1136,
+        -224
+      ],
+      "id": "70191145-8e3f-4927-97fe-e77a78f9c7e1",
+      "name": "Call 'Create QRcode'"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "pedidos",
+          "mode": "list",
+          "cachedResultName": "pedidos"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.orderId }}",
+            "status": "={{ $json.status }}",
+            "data_updated": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "whatsapp",
+              "displayName": "whatsapp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "items",
+              "displayName": "items",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total",
+              "displayName": "total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "payment_method",
+              "displayName": "payment_method",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "pickup_method",
+              "displayName": "pickup_method",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data_criacao",
+              "displayName": "data_criacao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "data_updated",
+              "displayName": "data_updated",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        256,
+        -368
+      ],
+      "id": "4a1a4d03-a610-4d3c-b089-81f4533ef99d",
+      "name": "Tabela atualizada",
+      "credentials": {
+        "postgres": {
+          "id": "fJ9Us6La5H95leLB",
+          "name": "Postgresql - Docker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Simulação de alteração do status do pedido para app",
+        "height": 256,
+        "width": 816
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -816,
+        16
+      ],
+      "id": "d99c34ab-563d-4302-9faa-b4dffcb61762",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nextStep",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -704,
+        96
+      ],
+      "id": "c9dcd7df-3ff4-411a-b894-96fb9a11bbd3",
+      "name": "Webhook",
+      "webhookId": "62f155b1-52ec-44f1-bf37-4ceebf815962"
+    },
+    {
+      "parameters": {
+        "content": "## Respostas situacionais \n\n\n\n\nQuando o pedido está em  ->\nprodução\n\n\n\n\n\n\n\n\n\n\n\n\n\nQuando o pedido está ->\npronto\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nQuando o pedido está ->\nno Locker\n\n",
+        "height": 752,
+        "width": 944
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        928,
+        -736
+      ],
+      "id": "8a599b06-aac2-4a8d-b096-9ee3feb8c3c5",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "pedidos",
+          "mode": "list",
+          "cachedResultName": "pedidos"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "={{ $json.idPedido }}"
+            },
+            {
+              "column": "whatsapp",
+              "value": "={{ $json.whatsapp }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -976,
+        -416
+      ],
+      "id": "74f5d0ab-17a9-46c4-9129-8e45c9386e95",
+      "name": "Busca pedido pelo ID",
+      "credentials": {
+        "postgres": {
+          "id": "fJ9Us6La5H95leLB",
+          "name": "Postgresql - Docker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"orderId\": {{ $json.id }},\n  \"status\" : \"locker\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        48,
+        -368
+      ],
+      "id": "988348db-30b3-4e51-8194-5716e87ab96c",
+      "name": "Simulador de status do pedido"
+    },
+    {
+      "parameters": {
+        "content": "## Simulação de alteração do status do pedido para Mequizap\n\n### Status:\n* em andamento\n* pronto\n* locker",
+        "height": 448,
+        "width": 432,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -608
+      ],
+      "id": "50fc7c18-d6ab-4e16-a376-1d464c823976",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"orderId\": {{ $json.body.orderId }},\n  \"distance\": 1.2,\n\"step\" : 3\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -480,
+        96
+      ],
+      "id": "71197dfa-e704-4e6b-800c-f1bd00fd98cf",
+      "name": "Editando dados do status do pedido"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.step }},{{ $json.distance }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -240,
+        96
+      ],
+      "id": "d6aca93e-14a0-45d9-8744-482825e1d706",
+      "name": "Retorna passos e distancia"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://evolution_api:8080/message/sendText/n8n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "AC8EDB2101E4-4ADB-9C58-EE5787F14A75"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Busca pedido pelo ID').item.json.whatsapp }}"
+            },
+            {
+              "name": "text",
+              "value": "Pedido pronto! 🍔 Estamos alocando no locker..."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1136,
+        -448
+      ],
+      "id": "9a3a3d34-bfca-4acf-ab2d-e6fc2ee6f451",
+      "name": "Enviar mensagem ao cliente - PRONTO"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://evolution_api:8080/message/sendText/n8n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "AC8EDB2101E4-4ADB-9C58-EE5787F14A75"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Busca pedido pelo ID').item.json.whatsapp }}"
+            },
+            {
+              "name": "text",
+              "value": "Seu pedido está sendo preparado! ⏳"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1136,
+        -656
+      ],
+      "id": "7d2bead2-1e4c-4f2e-9fa4-465060789617",
+      "name": "Enviar mensagem ao cliente - ANDAMENTO"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "18b00b68-1009-46df-88cb-bc6351e373ee",
+              "leftValue": "={{ $json.whatsapp }}",
+              "rightValue": "={{ $('When Executed by Another Workflow').item.json.whatsapp }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "8d03b996-2843-4531-b07c-5e59070d4d87",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "={{ $('When Executed by Another Workflow').item.json.idPedido }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -672,
+        -416
+      ],
+      "id": "f0b9fa77-5100-40b6-8d9c-9acb67be6d11",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Não foi possível encontrar esse pedido vinculado ao seu número"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -320
+      ],
+      "id": "fae5ce97-b8f1-4059-81a8-8f4de2c5f9c5",
+      "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "content": "## Tratamento de segurança\n\n### Impedindo que um usuário possa conferir o status de pedidos que não estão vinculados ao seu número",
+        "height": 496,
+        "width": 512
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -816,
+        -608
+      ],
+      "id": "4690e29a-53b9-463f-8b19-6d8a356ff7f5",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "pedidos",
+          "mode": "list",
+          "cachedResultName": "pedidos"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "={{ $('Tabela atualizada').item.json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1488,
+        -528
+      ],
+      "id": "b41c3842-cd52-4e4f-a7f3-e2e1154bd4cc",
+      "name": "Expondo pedido ao Agente",
+      "credentials": {
+        "postgres": {
+          "id": "fJ9Us6La5H95leLB",
+          "name": "Postgresql - Docker"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "whatsapp": "556992717580@s.whatsapp.net",
+          "idPedido": "16"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Busca pedido pelo ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Enviar mensagem ao cliente - ANDAMENTO",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar mensagem ao cliente - PRONTO",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call 'Create QRcode'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Create QRcode'": {
+      "main": [
+        []
+      ]
+    },
+    "Tabela atualizada": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Editando dados do status do pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca pedido pelo ID": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simulador de status do pedido": {
+      "main": [
+        [
+          {
+            "node": "Tabela atualizada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Editando dados do status do pedido": {
+      "main": [
+        [
+          {
+            "node": "Retorna passos e distancia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar mensagem ao cliente - PRONTO": {
+      "main": [
+        [
+          {
+            "node": "Expondo pedido ao Agente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar mensagem ao cliente - ANDAMENTO": {
+      "main": [
+        [
+          {
+            "node": "Expondo pedido ao Agente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Simulador de status do pedido",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "86b031f2-2ec1-43b2-9220-d41dd191e7b1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "80664dbc990da4ced652c71ae04d16d3881c368fc794bc8eb2db300cc33d46e0"
+  },
+  "id": "2mou4Z44jYVQZMJ5",
+  "tags": []
+}
