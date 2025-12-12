@@ -15,36 +15,51 @@ export default function PickupConfirmed() {
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [comment, setComment] = useState("");
   
   const [confirmedAt] = useState(new Date());
 
-  const handleRating = async (value: number) => {
+  const handleRating = (value: number) => {
     setRating(value);
+  };
+
+  const handleSubmitFeedback = async () => {
+    if (!order?.id) return;
     
-    if (order?.id) {
-      try {
-        const N8N_WEBHOOK_URL = `${import.meta.env.VITE_N8N_WEBHOOK_URL}/getAvaliation`;
-        
-        if (N8N_WEBHOOK_URL) {
-          fetch(N8N_WEBHOOK_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              orderId: order.id,
-              rating: value,
-            }),
-          });
-        }
-        
-        toast({
-          title: "Obrigado!",
-          description: "Seu feedback foi enviado com sucesso.",
+    setIsSubmitting(true);
+    try {
+      const N8N_WEBHOOK_URL = `${import.meta.env.VITE_N8N_WEBHOOK_URL}/getAvaliation`;
+      
+      if (N8N_WEBHOOK_URL) {
+        await fetch(N8N_WEBHOOK_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            orderId: order.id,
+            rating: rating,
+            comment: comment,
+            platform: "App McSmart"
+          }),
         });
-      } catch (error) {
-        console.error("Erro ao enviar feedback:", error);
       }
+      
+      toast({
+        title: "Obrigado!",
+        description: "Sua avaliação foi enviada com sucesso.",
+      });
+      // Clear comment but keep rating to show "thank you" state or just close
+      setComment("");
+    } catch (error) {
+      console.error("Erro ao enviar feedback:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível enviar sua avaliação.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -117,12 +132,36 @@ export default function PickupConfirmed() {
             </div>
 
             {rating > 0 && (
-              <p className="text-sm font-medium text-primary">
-                {rating === 5 && "Excelente! Obrigado pelo feedback 🎉"}
-                {rating === 4 && "Muito bom! Vamos melhorar ainda mais 👍"}
-                {rating === 3 && "Bom! Como podemos melhorar? 🤔"}
-                {rating <= 2 && "Que pena! Vamos trabalhar para melhorar 💪"}
-              </p>
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
+                <p className="text-sm font-medium text-primary">
+                  {rating === 5 && "Excelente! Obrigado pelo feedback 🎉"}
+                  {rating === 4 && "Muito bom! Vamos melhorar ainda mais 👍"}
+                  {rating === 3 && "Bom! Como podemos melhorar? 🤔"}
+                  {rating <= 2 && "Que pena! Vamos trabalhar para melhorar 💪"}
+                </p>
+
+                <div className="space-y-2">
+                  <textarea
+                    placeholder="Gostaria de deixar um comentário? (Opcional)"
+                    className="w-full p-3 rounded-xl border border-border bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm resize-none"
+                    rows={3}
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                  />
+                  <McButton 
+                    onClick={handleSubmitFeedback} 
+                    disabled={isSubmitting}
+                    className="w-full text-sm h-10"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Enviando...
+                      </>
+                    ) : "Enviar Avaliação"}
+                  </McButton>
+                </div>
+              </div>
             )}
           </div>
         </McCard>
