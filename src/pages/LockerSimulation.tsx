@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -9,6 +9,26 @@ const LockerSimulation = () => {
   const [orderId, setOrderId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isLockerOpen, setIsLockerOpen] = useState(false);
+  const [countdown, setCountdown] = useState(10);
+
+  // Countdown effect
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+
+    if (isLockerOpen && countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    } else if (countdown === 0 && isLockerOpen) {
+      // Time's up
+      setCode("");
+      setOrderId("");
+      setIsLockerOpen(false);
+      setCountdown(10); // Reset for next time
+    }
+
+    return () => clearInterval(timer);
+  }, [isLockerOpen, countdown]);
 
   const handlePickup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,12 +55,8 @@ const LockerSimulation = () => {
         toast.success("Código verificado! Portas se abrindo...", {
           icon: <PackageOpen className="h-5 w-5" />,
         });
+        setCountdown(10); // Ensure it starts at 10
         setIsLockerOpen(true);
-        setTimeout(() => {
-          setCode("");
-          setOrderId("");
-          setIsLockerOpen(false);
-        }, 10000); 
       } else {
         toast.error("Código inválido ou expirado.");
       }
@@ -67,7 +83,7 @@ const LockerSimulation = () => {
             <h2 className="text-4xl font-bold text-black mb-2">Pedido Retirado!</h2>
             <p className="text-black/80 font-medium">Obrigado por comprar no McDonald's</p>
             <div className="mt-8 bg-black/10 px-4 py-2 rounded-full">
-              <p className="text-black text-sm font-bold">Locker fechando em 10s</p>
+              <p className="text-black text-sm font-bold">Locker fechando em {countdown}s</p>
             </div>
           </div>
 
