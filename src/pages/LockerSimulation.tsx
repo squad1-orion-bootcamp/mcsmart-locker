@@ -40,7 +40,7 @@ const LockerSimulation = () => {
           setCode("");
           setOrderId("");
           setIsLockerOpen(false);
-        }, 5000); // Reset after 5 seconds
+        }, 10000); 
       } else {
         toast.error("Código inválido ou expirado.");
       }
@@ -67,7 +67,7 @@ const LockerSimulation = () => {
             <h2 className="text-4xl font-bold text-black mb-2">Pedido Retirado!</h2>
             <p className="text-black/80 font-medium">Obrigado por comprar no McDonald's</p>
             <div className="mt-8 bg-black/10 px-4 py-2 rounded-full">
-              <p className="text-black text-sm font-bold">Porta Closing im 5s</p>
+              <p className="text-black text-sm font-bold">Locker fechando em 10s</p>
             </div>
           </div>
 
