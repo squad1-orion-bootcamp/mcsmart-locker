@@ -1,73 +1,96 @@
-# Welcome to your Lovable project
+# McSmart Locker
 
-## Project info
+McSmart Locker é uma aplicação de simulação de armário inteligente (Smart Locker) integrada com WhatsApp e IA. O projeto demonstra um fluxo completo de pedidos, desde o onboarding até a retirada do produto, utilizando tecnologias modernas e orquestração de microsserviços.
 
-**URL**: https://lovable.dev/projects/fb4bbf6b-6ecb-42e5-ba7e-775131cf74fb
+## 🚀 Funcionalidades Principais
 
-## How can I edit this code?
+### 🔐 Simulação de Locker (Smart Locker)
+Uma interface imersiva de quiosque que replica a experiência física de retirada em um armário inteligente.
+- **Validação Segura**: O usuário insere o ID do Pedido e um Código de Retirada único (gerado pelo backend).
+- **Feedback Visual**: Animação realista das portas do armário se abrindo automaticamente após a validação bem-sucedida via webhook.
+- **Integração Real-time**: A interface se comunica diretamente com o workflow n8n para verificar as credenciais instantaneamente.
 
-There are several ways of editing your application.
+### ⏱️ Jornada "Just-in-Time" com IA
+O sistema elimina filas e garante que o lanche esteja sempre fresco.
+- **Sincronização de Preparo**: Utiliza a geolocalização do usuário para calcular o tempo estimado de chegada à loja. O preparo na cozinha só inicia quando o cliente está próximo o suficiente.
+- **Tracking Detalhado**: O cliente acompanha cada etapa em tempo real:
+  1.  **Pedido Confirmado**: Recebimento do pedido.
+  2.  **IA Sincronizando**: Aguardando o momento ideal baseada na distância.
+  3.  **Preparando**: O pedido entra em produção na cozinha.
+  4.  **Pronto para Retirada**: O cliente recebe o código para abrir o locker.
 
-**Use Lovable**
+### 🤖 Integração MéquiZap (Ronald)
+Um assistente virtual inteligente ("Ronald") que vive no WhatsApp.
+- **Pedidos via Chat**: Os usuários podem interagir com o bot para realizar pedidos de forma conversacional.
+- **Notificações Ativas**: O sistema envia automaticamente atualizações de status e o código de retirada para o WhatsApp do cliente via **Evolution API**.
+- **IA Conversacional**: Utiliza **Flowise** e **Qdrant** (RAG) para entender contextos e responder dúvidas de forma natural.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/fb4bbf6b-6ecb-42e5-ba7e-775131cf74fb) and start prompting.
+## 🛠️ Tecnologias Utilizadas
 
-Changes made via Lovable will be committed automatically to this repo.
+### Frontend
+- **React** (via Vite)
+- **TypeScript**
+- **Tailwind CSS** & **shadcn/ui** (Estilização e Componentes)
+- **React Router DOM** (Navegação)
+- **TanStack Query** (Gerenciamento de Estado Assíncrono)
 
-**Use your preferred IDE**
+### Backend & Serviços (Docker)
+- **Nginx**: Proxy reverso para expor a aplicação e webhooks.
+- **Evolution API**: API para integração com WhatsApp.
+- **n8n**: Ferramenta de automação de fluxo de trabalho.
+- **Flowise**: Interface drag-and-drop para construir fluxos de LLM (Large Language Models).
+- **Qdrant**: Banco de dados vetorial para IA.
+- **PostgreSQL**: Banco de dados relacional (usado pelo n8n e Evolution API).
+- **MongoDB**: Banco de dados NoSQL (usado pelo n8n).
+- **Redis**: Armazenamento em cache e filas.
+- **Ngrok**: Tunelamento para expor os serviços locais (webhooks) para a internet.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🏁 Como Iniciar
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Pré-requisitos
+- **Docker** e **Docker Compose** instalados.
+- **Node.js** e **npm** (para desenvolvimento local fora do container, opcional).
 
-Follow these steps:
+### Passo a Passo
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+1.  **Clone o repositório:**
+    ```bash
+    git clone <URL_DO_REPOSITORIO>
+    cd mcsmart-locker
+    ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2.  **Configure as variáveis de ambiente:**
+    - Copie o arquivo `.env.example` para `.env` e preencha as credenciais necessárias (banco de dados, senhas, etc.).
+    ```bash
+    cp .env.example .env
+    ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+3.  **Inicie a aplicação com Ngrok:**
+    O projeto inclui um script utilitário `start-with-ngrok.sh` que facilita a inicialização de todos os serviços e a configuração automática da URL pública do Ngrok para os webhooks.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+    **Execute o script:**
+    ```bash
+    chmod +x start-with-ngrok.sh
+    ./start-with-ngrok.sh
+    ```
 
-**Edit a file directly in GitHub**
+    Este script irá:
+    - Parar containers antigos.
+    - Iniciar o Ngrok.
+    - Capturar a URL pública gerada pelo Ngrok.
+    - Atualizar o arquivo `.env` com a nova `VITE_N8N_WEBHOOK_URL`.
+    - Iniciar todos os outros serviços (Frontend, APIs, Bancos de Dados) via Docker Compose.
+    - Exibir as URLs de acesso no final.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+4.  **Acesse a aplicação:**
+    Após o script finalizar, a aplicação estará acessível através da URL pública do Ngrok fornecida no terminal (ex: `https://xxxx-xx-xx-xx-xx.ngrok-free.app`).
 
-**Use GitHub Codespaces**
+## 📁 Estrutura do Projeto
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/fb4bbf6b-6ecb-42e5-ba7e-775131cf74fb) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- **/src**: Código fonte do frontend (React).
+  - **/pages**: Telas da aplicação (Onboarding, Menu, LockerSimulation, etc.).
+  - **/components**: Componentes reutilizáveis.
+  - **/contexts**: Contextos do React (Carrinho, Usuário).
+- **docker-compose.yml**: Definição de todos os serviços e redes do Docker.
+- **start-with-ngrok.sh**: Script de automação para inicialização com Ngrok.
+- **nginx/**: Configurações do proxy reverso.
