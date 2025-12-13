@@ -4,7 +4,7 @@
     {
       "parameters": {
         "inputSource": "jsonExample",
-        "jsonExample": "{\n  \"whatsapp\": \"999999999@whatsapp\",\n  \"idPedido\": \"\"\n}"
+        "jsonExample": "{\n  \"whatsapp\": \"999999999@whatsapp\",\n  \"idPedido\": \"\",\n  \"apikey\": \"\"\n}"
       },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
@@ -55,7 +55,7 @@
                   {
                     "id": "838e6036-a98d-4c2f-93e7-850cbdacac92",
                     "leftValue": "={{ $json.status }}",
-                    "rightValue": "pronto",
+                    "rightValue": "alocando",
                     "operator": {
                       "type": "string",
                       "operation": "equals",
@@ -113,7 +113,7 @@
           "value": "SC3yLbY3Khe8V8v8",
           "mode": "list",
           "cachedResultUrl": "/n8n/workflow/SC3yLbY3Khe8V8v8",
-          "cachedResultName": "Create QRcode"
+          "cachedResultName": "Workflow - Create QRcode"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -174,8 +174,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        1136,
-        -224
+        1344,
+        -192
       ],
       "id": "70191145-8e3f-4927-97fe-e77a78f9c7e1",
       "name": "Call 'Create QRcode'"
@@ -350,7 +350,8 @@
       "parameters": {
         "content": "## Respostas situacionais \n\n\n\n\nQuando o pedido está em  ->\nprodução\n\n\n\n\n\n\n\n\n\n\n\n\n\nQuando o pedido está ->\npronto\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nQuando o pedido está ->\nno Locker\n\n",
         "height": 752,
-        "width": 944
+        "width": 848,
+        "color": 4
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -421,7 +422,7 @@
     },
     {
       "parameters": {
-        "content": "## Simulação de alteração do status do pedido para Mequizap\n\n### Status:\n* em andamento\n* pronto\n* locker",
+        "content": "## Simulação de alteração do status do pedido para Mequizap\n\n### Status:\n* em andamento\n* alocando\n* locker",
         "height": 448,
         "width": 432,
         "color": 6
@@ -487,43 +488,6 @@
             },
             {
               "name": "text",
-              "value": "Pedido pronto! 🍔 Estamos alocando no locker..."
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.3,
-      "position": [
-        1136,
-        -448
-      ],
-      "id": "9a3a3d34-bfca-4acf-ab2d-e6fc2ee6f451",
-      "name": "Enviar mensagem ao cliente - PRONTO"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "=http://evolution_api:8080/message/sendText/n8n",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "apikey",
-              "value": "AC8EDB2101E4-4ADB-9C58-EE5787F14A75"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "number",
-              "value": "={{ $('Busca pedido pelo ID').item.json.whatsapp }}"
-            },
-            {
-              "name": "text",
               "value": "Seu pedido está sendo preparado! ⏳"
             }
           ]
@@ -533,7 +497,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        1136,
+        1344,
         -656
       ],
       "id": "7d2bead2-1e4c-4f2e-9fa4-465060789617",
@@ -601,7 +565,8 @@
       "parameters": {
         "content": "## Tratamento de segurança\n\n### Impedindo que um usuário possa conferir o status de pedidos que não estão vinculados ao seu número",
         "height": 496,
-        "width": 512
+        "width": 512,
+        "color": 2
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -639,8 +604,8 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        1488,
-        -528
+        1552,
+        -544
       ],
       "id": "b41c3842-cd52-4e4f-a7f3-e2e1154bd4cc",
       "name": "Expondo pedido ao Agente",
@@ -650,14 +615,52 @@
           "name": "Postgresql - Docker"
         }
       }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://evolution_api:8080/message/sendText/n8n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "AC8EDB2101E4-4ADB-9C58-EE5787F14A75"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Busca pedido pelo ID').item.json.whatsapp }}"
+            },
+            {
+              "name": "text",
+              "value": "Pedido sendo alocado! 🍔 Estamos finalizando e em breve será disponibiliado no locker..."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1344,
+        -416
+      ],
+      "id": "9a3a3d34-bfca-4acf-ab2d-e6fc2ee6f451",
+      "name": "Enviar mensagem ao cliente - ALOCANDO"
     }
   ],
   "pinData": {
     "When Executed by Another Workflow": [
       {
         "json": {
-          "whatsapp": "556992717580@s.whatsapp.net",
-          "idPedido": "16"
+          "whatsapp": "108237554712726@lid",
+          "idPedido": "9",
+          "apikey": null
         }
       }
     ]
@@ -685,7 +688,7 @@
         ],
         [
           {
-            "node": "Enviar mensagem ao cliente - PRONTO",
+            "node": "Enviar mensagem ao cliente - ALOCANDO",
             "type": "main",
             "index": 0
           }
@@ -759,17 +762,6 @@
         ]
       ]
     },
-    "Enviar mensagem ao cliente - PRONTO": {
-      "main": [
-        [
-          {
-            "node": "Expondo pedido ao Agente",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Enviar mensagem ao cliente - ANDAMENTO": {
       "main": [
         [
@@ -798,13 +790,24 @@
           }
         ]
       ]
+    },
+    "Enviar mensagem ao cliente - ALOCANDO": {
+      "main": [
+        [
+          {
+            "node": "Expondo pedido ao Agente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "86b031f2-2ec1-43b2-9220-d41dd191e7b1",
+  "versionId": "e21621e6-87f3-475c-ad26-7d495e36599c",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "80664dbc990da4ced652c71ae04d16d3881c368fc794bc8eb2db300cc33d46e0"

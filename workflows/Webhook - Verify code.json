@@ -11,7 +11,7 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -400,
+        -416,
         -64
       ],
       "id": "170a479d-4036-4aac-9aec-e7a551f3ca0b",
@@ -229,7 +229,7 @@
     },
     {
       "parameters": {
-        "amount": 10
+        "amount": 15
       },
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
@@ -256,7 +256,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n    \"number\": \"{{ $json.whatsapp }}\",\n    \"name\": \"De 1 a 5, quão bom foi a experiência utilizando o Méquizap? \",\n    \"selectableCount\": 1,\n    \"values\": [\n        \"1 - Muito ruim\",\n        \"2 - Ruim\",\n        \"3 - Razoável\",\n        \"4 - Bom\",\n        \"5 - Excelente\"\n    ]\n}",
+        "jsonBody": "={\n    \"number\": \"{{ $json.whatsapp }}\",\n    \"name\": \"De 1 a 5, me dê uma nota do meu atendimento\",\n    \"selectableCount\": 1,\n    \"values\": [\n        \"1 - Muito ruim \",\n        \"2 - ruim\",\n        \"3 - Razoável \",\n    \"4 - Bom\",\n        \"5 - Excelente \"\n    ]\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -423,22 +423,24 @@
       "parameters": {
         "content": "## Expirando código usado",
         "height": 288,
-        "width": 400
+        "width": 416,
+        "color": 6
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        416,
-        -272
+        384,
+        -256
       ],
       "id": "8db66d20-04de-425c-9862-af4e2af60a8e",
       "name": "Sticky Note1"
     },
     {
       "parameters": {
-        "content": "## Coleta avaliação do pedido ao usuário",
+        "content": "## Envia avaliação do pedido ao usuário",
         "height": 336,
-        "width": 848
+        "width": 848,
+        "color": 2
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -457,29 +459,25 @@
           "headers": {
             "host": "goatlike-rosena-lickerishly.ngrok-free.dev",
             "x-real-ip": "172.19.0.1",
-            "x-forwarded-for": "2804:d59:9042:7000:c212:219f:1489:7d20, 172.19.0.1",
+            "x-forwarded-for": "2804:1b3:a241:ab56:4b9:7e75:727d:7c0a, 172.19.0.1",
             "x-forwarded-proto": "http",
             "connection": "close",
-            "content-length": "32",
-            "user-agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0",
+            "content-length": "31",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.3 Safari/605.1.15",
             "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br, zstd",
-            "accept-language": "pt-BR,en-US;q=0.7,en;q=0.3",
+            "accept-encoding": "gzip, deflate, br",
+            "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
             "content-type": "application/json",
-            "cookie": "abuse_interstitial=goatlike-rosena-lickerishly.ngrok-free.dev; rl_session=RudderEncrypt%3AU2FsdGVkX1%2BU9HK5TJMvm2shdx5r4DtIRmXoTGqp0tYl%2BlNUfVlcIgDx5hjsCZXC8g48I8mwQnDsKV66v7FK7YYLtOPhZDxxs0Ht1fVXqVJ6ckAoXMsDbnfVkK2AYCAkJ9WschMdIeLzxE%2FlBuyQKQ%3D%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX19q05buqemTAg%2B8TubG9lfowZNP5SHjhbHigz0rx9jVzT8LQuM5V6zny46432d95m9mR11YK1KeGA%3D%3D; rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX19gUxr%2BZVO0Zc9UoexKCiFjTjyz%2B4S%2Fg0k%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX18vhFe7bRR%2F6JVFA6j68%2F3pLgYdLLBH2UM%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2FGB2zhyYQ1vLFzw7I%2FUZa0UmwCYbkSyz8aXNuDai9zYQOzXkP0b57DL0cMyn2oM3ggxAVUtWchoMgq4d1LhlyN82oZrUkEtIcIbJfn%2Bs2B064EpMmbLBVaW6%2BiIbFDtxnTsvFiXu%2FMKqgDHA0ghsHJWikWs5Vf0zU%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX184q75UOuoGQBzSAL3vL6759GLtXd3ym73z3a5zZgZTttGsSF8mHvQ0%2BB%2F3WgvJkOj7tVPLwzTL0POx7yWAq0UQKVBTHyw9%2FSU%2FsbzKBInWw7qC%2FiQrw2Kh%2FEOJf0MiTKj61VnltjkDeJnINVzi%2F%2BQKdm3xiBVuHcQ%3D",
+            "cookie": "abuse_interstitial=goatlike-rosena-lickerishly.ngrok-free.dev",
             "origin": "https://goatlike-rosena-lickerishly.ngrok-free.dev",
-            "priority": "u=0",
             "referer": "https://goatlike-rosena-lickerishly.ngrok-free.dev/locker-simulation",
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
             "x-forwarded-host": "goatlike-rosena-lickerishly.ngrok-free.dev"
           },
           "params": {},
           "query": {},
           "body": {
-            "code": "109953",
-            "orderId": "12"
+            "code": "411448",
+            "orderId": "9"
           },
           "webhookUrl": "https://goatlike-rosena-lickerishly.ngrok-free.dev/webhook/webhook/verifyCode",
           "executionMode": "production"
@@ -582,7 +580,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "f7dbd31e-afab-48dd-90c8-48fa789df318",
+  "versionId": "770c9f4b-4a8d-42fc-9ad2-fc1046a002ce",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "80664dbc990da4ced652c71ae04d16d3881c368fc794bc8eb2db300cc33d46e0"
