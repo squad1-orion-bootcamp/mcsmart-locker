@@ -21,7 +21,7 @@ export default function LockerReady() {
 
   useEffect(() => {
     const fetchQRCode = async () => {
-      console.log("Fetching QR Code for order:", order);
+
       if (!order?.id) {
         console.error("No order ID found");
         return;
@@ -29,7 +29,7 @@ export default function LockerReady() {
 
       try {
         const webhookUrl = `${import.meta.env.VITE_N8N_WEBHOOK_URL}/qrCode`;
-        console.log("Webhook URL:", webhookUrl);
+
         
         const response = await fetch(webhookUrl, {
           method: "POST",
@@ -41,7 +41,7 @@ export default function LockerReady() {
 
         if (response.ok) {
           const textData = await response.text();
-          console.log("Raw Webhook Text:", textData);
+
           
           if (!textData) {
              console.error("Webhook returned empty response");
@@ -56,15 +56,15 @@ export default function LockerReady() {
              return;
           }
 
-          console.log("Parsed JSON:", data);
+
           
           // N8N return might be an array or object
           const result = Array.isArray(data) ? data[0] : data;
-          console.log("Parsed Result Object:", result);
+
           
           // Look for 'baseUrlQrCode', 'qrcode', 'data', or use result itself
           const qrCodeParsed = result?.baseUrlQrCode || result?.qrcode || result?.data || result;
-          console.log("Extracted QR String:", qrCodeParsed ? "Found (length: " + qrCodeParsed.length + ")" : "Not Found");
+
           
           if (result?.locker) {
             setLockerNumber(result.locker);
@@ -81,7 +81,7 @@ export default function LockerReady() {
              } else {
                 // Otherwise assume it's raw base64 png
                 const finalString = `data:image/png;base64,${qrCodeParsed}`;
-                console.log("Setting Final Base64 String (starts with):", finalString.substring(0, 50));
+
                 setQrCodeBase64(finalString);
              }
           }
