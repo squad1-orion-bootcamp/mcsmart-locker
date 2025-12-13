@@ -54,8 +54,7 @@ export default function LocationPermission() {
         },
         (error) => {
           setIsLoading(false);
-          console.error("Error getting location:", error);
-          toast("Erro ao obter localização", {
+              toast("Erro ao obter localização", {
             description: "Não foi possível obter sua localização. Verifique as permissões do navegador.",
             action: {
               label: "Tentar novamente",

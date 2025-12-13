@@ -24,27 +24,16 @@ export default function Stores() {
     const fetchStores = async () => {
       try {
         const webhookUrl = `${import.meta.env.VITE_N8N_WEBHOOK_URL}/getStores`;
-        // If the URL is just the base, we append /getStores
-        // If usage elsewhere suggests VITE_N8N_WEBHOOK_URL is the base, this is correct.
         
         const response = await fetch(webhookUrl);
         if (!response.ok) throw new Error("Falha ao buscar lojas");
         
         const data = await response.json();
         
-        // Ensure data is an array
         const storesData = Array.isArray(data) ? data : (data.stores || []);
         
         setStores(storesData);
-      } catch (error) {
-        console.error("Erro ao buscar lojas:", error);
-        toast({ 
-          title: "Erro ao carregar lojas", 
-          description: "Usando dados de demonstração.",
-          variant: "destructive" 
-        });
-        
-        // Fallback to demo data if fetch fails (useful for dev/demo without backend)
+      } catch (error) {        
         setStores([
           {
             id: 1,

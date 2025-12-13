@@ -49,10 +49,9 @@ export default function PickupConfirmed() {
         title: "Obrigado!",
         description: "Sua avaliação foi enviada com sucesso.",
       });
-      // Clear comment but keep rating to show "thank you" state or just close
+
       setComment("");
     } catch (error) {
-      console.error("Erro ao enviar feedback:", error);
       toast({
         title: "Erro",
         description: "Não foi possível enviar sua avaliação.",

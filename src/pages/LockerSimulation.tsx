@@ -61,7 +61,7 @@ const LockerSimulation = () => {
         toast.error("Código inválido ou expirado.");
       }
     } catch (error) {
-      console.error("Erro ao verificar código:", error);
+
       toast.error("Erro de conexão com o sistema.");
     } finally {
       setIsLoading(false);
