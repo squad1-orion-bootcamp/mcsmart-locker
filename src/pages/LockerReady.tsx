@@ -1,19 +1,99 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { McHeader } from "@/components/McHeader";
 import { McButton } from "@/components/McButton";
 import { McCard } from "@/components/McCard";
-import { MapPin, Clock, Box } from "lucide-react";
-import QRCode from "react-qr-code";
+import { MapPin, Clock, Box, Loader2, Copy, Check } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LockerReady() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const location = useLocation();
   const order = location.state?.order;
   const [showCode, setShowCode] = useState(false);
-  const [accessCode] = useState(
-    () => String(Math.floor(Math.random() * 1_000_000)).padStart(6, "0")
-  );
+  const [accessCode, setAccessCode] = useState<string | null>(null);
+  const [lockerNumber, setLockerNumber] = useState<string | number | undefined>(order?.locker);
+  const [isCopied, setIsCopied] = useState(false);
+  
+  const [qrCodeBase64, setQrCodeBase64] = useState<string | null>(null);
+  const [isLoadingQr, setIsLoadingQr] = useState(true);
+
+  useEffect(() => {
+    const fetchQRCode = async () => {
+      console.log("Fetching QR Code for order:", order);
+      if (!order?.id) {
+        console.error("No order ID found");
+        return;
+      }
+
+      try {
+        const webhookUrl = `${import.meta.env.VITE_N8N_WEBHOOK_URL}/qrCode`;
+        console.log("Webhook URL:", webhookUrl);
+        
+        const response = await fetch(webhookUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ orderId: order.id }),
+        });
+
+        if (response.ok) {
+          const textData = await response.text();
+          console.log("Raw Webhook Text:", textData);
+          
+          if (!textData) {
+             console.error("Webhook returned empty response");
+             return;
+          }
+
+          let data;
+          try {
+             data = JSON.parse(textData);
+          } catch (e) {
+             console.error("Failed to parse webhook response as JSON:", e);
+             return;
+          }
+
+          console.log("Parsed JSON:", data);
+          
+          // N8N return might be an array or object
+          const result = Array.isArray(data) ? data[0] : data;
+          console.log("Parsed Result Object:", result);
+          
+          // Look for 'baseUrlQrCode', 'qrcode', 'data', or use result itself
+          const qrCodeParsed = result?.baseUrlQrCode || result?.qrcode || result?.data || result;
+          console.log("Extracted QR String:", qrCodeParsed ? "Found (length: " + qrCodeParsed.length + ")" : "Not Found");
+          
+          if (result?.locker) {
+            setLockerNumber(result.locker);
+          }
+          
+          if (result?.token) {
+            setAccessCode(result.token);
+          }
+          
+          if (typeof qrCodeParsed === 'string') {
+             // If it starts with data:image, use it as is
+             if (qrCodeParsed.startsWith('data:image')) {
+                setQrCodeBase64(qrCodeParsed);
+             } else {
+                // Otherwise assume it's raw base64 png
+                const finalString = `data:image/png;base64,${qrCodeParsed}`;
+                console.log("Setting Final Base64 String (starts with):", finalString.substring(0, 50));
+                setQrCodeBase64(finalString);
+             }
+          }
+        } 
+      } catch (error) {
+      } finally {
+        setIsLoadingQr(false);
+      }
+    };
+
+    fetchQRCode();
+  }, [order?.id]);
 
   const handleOpenLocker = () => {
     // Simular abertura do locker
@@ -39,7 +119,7 @@ export default function LockerReady() {
                 Pedido Pronto!
               </h2>
               <p className="text-muted-foreground">
-                Seu pedido está no locker {order?.locker} aguardando retirada
+                Seu pedido está no locker {lockerNumber} aguardando retirada
               </p>
             </div>
           </div>
@@ -66,8 +146,8 @@ export default function LockerReady() {
                   <Box className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium text-foreground">Locker {order?.locker}</p>
-                  <p className="text-muted-foreground">Corredor {order?.locker}, posição {order?.locker}</p>
+                  <p className="font-medium text-foreground">Locker {lockerNumber}</p>
+                  <p className="text-muted-foreground">Corredor {lockerNumber}, posição {lockerNumber}</p>
                 </div>
               </div>
 
@@ -97,27 +177,62 @@ export default function LockerReady() {
             </div>
 
             <div className="flex justify-center">
-              <div className="p-6 bg-white rounded-2xl shadow-lg">
-                <div className="bg-white rounded-lg flex items-center justify-center">
-                  <QRCode
-                    value={accessCode}
-                    size={192}
-                    bgColor="#FFFFFF"
-                    fgColor="#000000"
+              <div className="p-6 bg-white rounded-2xl shadow-lg min-h-[240px] w-[240px] flex items-center justify-center">
+                {isLoadingQr ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <span className="text-sm text-muted-foreground">Gerando QR Code...</span>
+                  </div>
+                ) : qrCodeBase64 ? (
+                  <img 
+                    src={qrCodeBase64} 
+                    alt="QR Code de Retirada" 
+                    className="w-full h-full object-contain"
                   />
-                </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center p-6 text-center">
+                    <p className="text-muted-foreground text-sm mb-2">Use o código:</p>
+                    <span className="text-4xl font-mono font-bold text-foreground tracking-widest">
+                      {accessCode || "---"}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">Código numérico de backup:</p>
-              <div className="flex justify-center">
+              <div className="flex flex-col justify-center items-center gap-3">
                 <button
                   onClick={() => setShowCode(!showCode)}
                   className="px-6 py-3 bg-muted rounded-xl font-mono text-xl font-bold text-foreground hover:bg-muted/80 transition-colors"
                 >
-                  {showCode ? accessCode : "••••••"}
+                  {showCode ? (accessCode || "Carregando...") : "••••••"}
                 </button>
+                {accessCode && (
+                  <button
+                    onClick={() => {
+                        if (accessCode) {
+                            navigator.clipboard.writeText(accessCode);
+                            setIsCopied(true);
+                            setTimeout(() => setIsCopied(false), 2000);
+                        }
+                    }}
+                    className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {isCopied ? (
+                        <>
+                            <Check className="h-3 w-3 text-green-500" />
+                            <span className="text-green-500">Copiado!</span>
+                        </>
+                    ) : (
+                        <>
+                            <Copy className="h-3 w-3" />
+                            <span>Copiar código</span>
+                        </>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
           </div>
