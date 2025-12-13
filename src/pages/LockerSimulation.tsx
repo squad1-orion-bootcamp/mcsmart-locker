@@ -49,13 +49,26 @@ const LockerSimulation = () => {
         body: JSON.stringify({ code, orderId }),
       });
 
-      const data = await response.json();
+      const text = await response.text();
+      let isSuccess = false;
 
-      if (data.success) {
+      try {
+        const data = JSON.parse(text);
+        const result = Array.isArray(data) ? data[0] : data;
+        
+        if (result && (result.success === true || result.success === "true")) {
+          isSuccess = true;
+        }
+      } catch (e) {
+        toast.error("Erro ao interpretar resposta do servidor.");
+        return;
+      }
+
+      if (isSuccess) {
         toast.success("Código verificado! Portas se abrindo...", {
           icon: <PackageOpen className="h-5 w-5" />,
         });
-        setCountdown(10); // Ensure it starts at 10
+        setCountdown(10); 
         setIsLockerOpen(true);
       } else {
         toast.error("Código inválido ou expirado.");
