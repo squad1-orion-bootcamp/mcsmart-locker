@@ -28,7 +28,7 @@ export default function OrderStatus() {
 
     const fetchStatus = async () => {
       try {
-        console.log(location.state)
+
         const N8N_WEBHOOK_URL = `${import.meta.env.VITE_N8N_WEBHOOK_URL}/nextStep`;
         if (!N8N_WEBHOOK_URL) {
           toast({
@@ -39,7 +39,7 @@ export default function OrderStatus() {
           return;
         }
 
-        console.log("OrderStatus - Order State:", order);
+
         
         const response = await fetch(N8N_WEBHOOK_URL, {
           method: "POST",
