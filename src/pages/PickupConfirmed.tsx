@@ -1,16 +1,64 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { McButton } from "@/components/McButton";
 import { McCard } from "@/components/McCard";
-import { CheckCircle2, Star, Home } from "lucide-react";
+import { CheckCircle2, Star, Home, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export default function PickupConfirmed() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
+  const order = location.state?.order;
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const [confirmedAt] = useState(new Date());
+
+  const handleRating = async (value: number) => {
+    setRating(value);
+
+    if (order?.id) {
+      setIsSubmitting(true);
+      try {
+        const N8N_WEBHOOK_URL = `${import.meta.env.VITE_N8N_WEBHOOK_URL}/getAvaliation`;
+        
+        if (N8N_WEBHOOK_URL) {
+          await fetch(N8N_WEBHOOK_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              orderId: order.id,
+              rating: value,
+              platform: "App McSmart"
+            }),
+          });
+        }
+        
+        toast({
+          title: "Obrigado!",
+          description: "Sua avaliação foi enviada com sucesso.",
+        });
+      } catch (error) {
+        console.error("Erro ao enviar feedback:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível enviar sua avaliação.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
+
+    }
+  };
 
   const handleFinish = () => {
-    // Enviar avaliação e voltar ao início
     navigate("/stores");
   };
 
@@ -36,10 +84,12 @@ export default function PickupConfirmed() {
         <McCard elevated className="bg-gradient-to-br from-primary/5 to-primary/10">
           <div className="text-center py-4 space-y-2">
             <p className="text-sm text-muted-foreground">Pedido</p>
-            <p className="text-3xl font-bold text-foreground">#1547</p>
+            <p className="text-3xl font-bold text-foreground">#{order?.id || "----"}</p>
             <div className="pt-2 border-t border-border/50 mt-4">
               <p className="text-sm text-muted-foreground">Retirado às</p>
-              <p className="font-semibold text-foreground">18:32</p>
+              <p className="font-semibold text-foreground capitalize">
+                {format(confirmedAt, "HH:mm", { locale: ptBR })}
+              </p>
             </div>
           </div>
         </McCard>
@@ -60,7 +110,7 @@ export default function PickupConfirmed() {
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
-                  onClick={() => setRating(star)}
+                  onClick={() => handleRating(star)}
                   onMouseEnter={() => setHoveredRating(star)}
                   onMouseLeave={() => setHoveredRating(0)}
                   className="transition-transform hover:scale-110"
@@ -77,12 +127,14 @@ export default function PickupConfirmed() {
             </div>
 
             {rating > 0 && (
-              <p className="text-sm font-medium text-primary">
-                {rating === 5 && "Excelente! Obrigado pelo feedback 🎉"}
-                {rating === 4 && "Muito bom! Vamos melhorar ainda mais 👍"}
-                {rating === 3 && "Bom! Como podemos melhorar? 🤔"}
-                {rating <= 2 && "Que pena! Vamos trabalhar para melhorar 💪"}
-              </p>
+              <div className="animate-in fade-in slide-in-from-bottom-2">
+                <p className="text-sm font-medium text-primary">
+                  {rating === 5 && "Excelente! Obrigado pelo feedback 🎉"}
+                  {rating === 4 && "Muito bom! Vamos melhorar ainda mais 👍"}
+                  {rating === 3 && "Bom! Como podemos melhorar? 🤔"}
+                  {rating <= 2 && "Que pena! Vamos trabalhar para melhorar 💪"}
+                </p>
+              </div>
             )}
           </div>
         </McCard>

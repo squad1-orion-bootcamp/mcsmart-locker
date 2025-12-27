@@ -1,0 +1,118 @@
+{
+  "name": "Workflow - Get Geolocation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "GetLocation",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        416,
+        -16
+      ],
+      "id": "a6cee4b0-aa10-46e3-9b11-32c5f8a0fe40",
+      "name": "Webhook",
+      "webhookId": "3c4ed2d9-537c-4262-8d4b-afbc324eaac2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        912,
+        -16
+      ],
+      "id": "734fbe59-214e-44c1-8821-df42302d24ce",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.body }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        704,
+        -16
+      ],
+      "id": "9d41b52a-d84a-4304-8809-4681bec32eb6",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "localhost:5678",
+            "user-agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0",
+            "accept": "*/*",
+            "accept-language": "pt-BR,en-US;q=0.7,en;q=0.3",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "referer": "http://localhost:8081/",
+            "content-type": "application/json",
+            "content-length": "87",
+            "origin": "http://localhost:8081",
+            "connection": "keep-alive",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-site",
+            "priority": "u=4"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "latitude": -25.4476288,
+            "longitude": -49.2765184,
+            "timestamp": "2025-11-26T19:53:58.645Z"
+          },
+          "webhookUrl": "http://localhost:5678/webhook/GetLocation",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "97fd49e7-d976-4d39-a47c-ff4a38674d2c",
+  "meta": {
+    "instanceId": "80664dbc990da4ced652c71ae04d16d3881c368fc794bc8eb2db300cc33d46e0"
+  },
+  "id": "Fsp7tZdPchM5BESx",
+  "tags": []
+}
