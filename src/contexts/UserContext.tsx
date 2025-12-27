@@ -8,7 +8,13 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [whatsapp, setWhatsapp] = useState("");
+  const [whatsapp, setWhatsapp] = useState(() => {
+    return localStorage.getItem("mc_whatsapp") || "";
+  });
+
+  React.useEffect(() => {
+    localStorage.setItem("mc_whatsapp", whatsapp);
+  }, [whatsapp]);
 
   return (
     <UserContext.Provider value={{ whatsapp, setWhatsapp }}>

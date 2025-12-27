@@ -11,6 +11,7 @@ import LocationPermission from "./pages/LocationPermission";
 import OrderStatus from "./pages/OrderStatus";
 import LockerReady from "./pages/LockerReady";
 import PickupConfirmed from "./pages/PickupConfirmed";
+import LockerSimulation from "./pages/LockerSimulation";
 import NotFound from "./pages/NotFound";
 import { CartProvider } from "./contexts/CartContext";
 import { UserProvider } from "./contexts/UserContext";
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/order-status" element={<OrderStatus />} />
             <Route path="/locker-ready" element={<LockerReady />} />
             <Route path="/pickup-confirmed" element={<PickupConfirmed />} />
+            <Route path="/locker-simulation" element={<LockerSimulation />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

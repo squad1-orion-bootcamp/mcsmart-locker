@@ -4,6 +4,8 @@ import { McCard } from "@/components/McCard";
 import { CheckCircle2, Star, Home, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export default function PickupConfirmed() {
   const navigate = useNavigate();
@@ -13,12 +15,16 @@ export default function PickupConfirmed() {
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const [confirmedAt] = useState(new Date());
 
-  const handleFinish = async () => {
-    if (rating > 0 && order?.id) {
+  const handleRating = async (value: number) => {
+    setRating(value);
+
+    if (order?.id) {
       setIsSubmitting(true);
       try {
-        const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_FEEDBACK_WEBHOOK_URL;
+        const N8N_WEBHOOK_URL = `${import.meta.env.VITE_N8N_WEBHOOK_URL}/getAvaliation`;
         
         if (N8N_WEBHOOK_URL) {
           await fetch(N8N_WEBHOOK_URL, {
@@ -28,22 +34,31 @@ export default function PickupConfirmed() {
             },
             body: JSON.stringify({
               orderId: order.id,
-              rating,
+              rating: value,
+              platform: "App McSmart"
             }),
           });
         }
         
         toast({
           title: "Obrigado!",
-          description: "Seu feedback foi enviado com sucesso.",
+          description: "Sua avaliação foi enviada com sucesso.",
         });
       } catch (error) {
         console.error("Erro ao enviar feedback:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível enviar sua avaliação.",
+          variant: "destructive"
+        });
       } finally {
         setIsSubmitting(false);
       }
+
     }
-    
+  };
+
+  const handleFinish = () => {
     navigate("/stores");
   };
 
@@ -72,7 +87,9 @@ export default function PickupConfirmed() {
             <p className="text-3xl font-bold text-foreground">#{order?.id || "----"}</p>
             <div className="pt-2 border-t border-border/50 mt-4">
               <p className="text-sm text-muted-foreground">Retirado às</p>
-              <p className="font-semibold text-foreground">18:32</p>
+              <p className="font-semibold text-foreground capitalize">
+                {format(confirmedAt, "HH:mm", { locale: ptBR })}
+              </p>
             </div>
           </div>
         </McCard>
@@ -93,7 +110,7 @@ export default function PickupConfirmed() {
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
-                  onClick={() => setRating(star)}
+                  onClick={() => handleRating(star)}
                   onMouseEnter={() => setHoveredRating(star)}
                   onMouseLeave={() => setHoveredRating(0)}
                   className="transition-transform hover:scale-110"
@@ -110,12 +127,14 @@ export default function PickupConfirmed() {
             </div>
 
             {rating > 0 && (
-              <p className="text-sm font-medium text-primary">
-                {rating === 5 && "Excelente! Obrigado pelo feedback 🎉"}
-                {rating === 4 && "Muito bom! Vamos melhorar ainda mais 👍"}
-                {rating === 3 && "Bom! Como podemos melhorar? 🤔"}
-                {rating <= 2 && "Que pena! Vamos trabalhar para melhorar 💪"}
-              </p>
+              <div className="animate-in fade-in slide-in-from-bottom-2">
+                <p className="text-sm font-medium text-primary">
+                  {rating === 5 && "Excelente! Obrigado pelo feedback 🎉"}
+                  {rating === 4 && "Muito bom! Vamos melhorar ainda mais 👍"}
+                  {rating === 3 && "Bom! Como podemos melhorar? 🤔"}
+                  {rating <= 2 && "Que pena! Vamos trabalhar para melhorar 💪"}
+                </p>
+              </div>
             )}
           </div>
         </McCard>
@@ -143,8 +162,8 @@ export default function PickupConfirmed() {
 
         {/* Actions */}
         <div className="space-y-3">
-          <McButton onClick={handleFinish} icon={isSubmitting ? Loader2 : Home} disabled={isSubmitting}>
-            {isSubmitting ? "Enviando..." : "Fazer Novo Pedido"}
+          <McButton onClick={handleFinish} icon={Home}>
+            Fazer Novo Pedido
           </McButton>
           
           <button
